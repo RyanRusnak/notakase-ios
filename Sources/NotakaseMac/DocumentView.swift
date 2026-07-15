@@ -1,0 +1,134 @@
+import NotakaseCore
+import SwiftUI
+
+struct DocumentView: View {
+    @ObservedObject var model: DesktopModel
+    let theme: Theme
+
+    var body: some View {
+        if model.view == .publish {
+            publishView
+                .frame(maxWidth: 760)
+        } else {
+            editView
+                .frame(maxWidth: 680)
+        }
+    }
+
+    // MARK: read / edit
+    private var editView: some View {
+        let n = model.current
+        let blocks = model.blocks
+        return VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 10) {
+                Text((n.dir + [n.fileName]).joined(separator: " / "))
+                Text("·")
+                Text("edited " + n.updated)
+            }
+            .font(.system(size: 11.5, design: .monospaced))
+            .foregroundStyle(theme.faintColor)
+            .padding(.bottom, 26)
+
+            ForEach(Array(blocks.enumerated()), id: \.offset) { i, block in
+                Group {
+                    if model.view == .edit && i == model.activeBlock {
+                        SourceBlockView(
+                            block: block, theme: theme,
+                            insertMode: model.insertMode)
+                    } else {
+                        BlockView(block: block, theme: theme)
+                    }
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if model.view == .edit { model.activeBlock = i }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: publish
+    private var publishView: some View {
+        let n = model.current
+        let blocks = model.blocks
+        let pages = model.store.notes.filter { $0.folder == n.folder }
+        let isSite = n.folder == "notakase.dev"
+        let url =
+            isSite
+            ? "notakase.dev/" + (n.slug ?? "index")
+            : n.folder.lowercased() + "/"
+                + n.fileName.replacingOccurrences(of: ".md", with: "")
+
+        return VStack(alignment: .leading, spacing: 0) {
+            // browser chrome
+            HStack(spacing: 8) {
+                HStack(spacing: 5) {
+                    ForEach(0..<3) { _ in
+                        Circle().fill(theme.borderColor).frame(width: 10, height: 10)
+                    }
+                }
+                Text(url)
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundStyle(theme.faintColor)
+                    .frame(maxWidth: .infinity)
+            }
+            .padding(.horizontal, 12).padding(.vertical, 8)
+            .background(theme.elevatedColor)
+            .overlay(
+                RoundedRectangle(cornerRadius: 9).stroke(theme.borderColor, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 9))
+            .padding(.bottom, 22)
+
+            // nav
+            HStack(spacing: 18) {
+                ForEach(pages) { p in
+                    let active = p.id == n.id
+                    Button(action: { model.openNote(p.id) }) {
+                        Text(p.title)
+                            .font(.system(size: 13, design: .monospaced))
+                            .foregroundStyle(active ? theme.accentColor : theme.fgMutedColor)
+                            .padding(.bottom, 4)
+                            .overlay(alignment: .bottom) {
+                                Rectangle()
+                                    .fill(active ? theme.accentColor : .clear)
+                                    .frame(height: 2)
+                            }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.bottom, 18)
+            .overlay(alignment: .bottom) {
+                Rectangle().fill(theme.borderColor).frame(height: 1)
+            }
+            .padding(.bottom, 30)
+
+            ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
+                BlockView(block: block, theme: theme)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            // footer
+            HStack(spacing: 8) {
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(theme.accentColor).frame(width: 7, height: 7)
+                Text(
+                    isSite
+                        ? "Built with Notakase · static export"
+                        : "Preview — publish this folder to make it a site"
+                )
+                .font(.system(size: 11, design: .monospaced))
+                .foregroundStyle(theme.faintColor)
+            }
+            .padding(.top, 18)
+            .overlay(alignment: .top) {
+                Rectangle().fill(theme.borderColor).frame(height: 1)
+            }
+            .padding(.top, 30)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}

@@ -1,0 +1,54 @@
+name: Notakase
+
+options:
+  bundleIdPrefix: dev.notakase
+  deploymentTarget:
+    macOS: "14.0"
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+packages:
+  NotakaseCore:
+    path: Packages/NotakaseCore
+
+targets:
+  NotakaseMac:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/NotakaseMac
+    dependencies:
+      - package: NotakaseCore
+    settings:
+      base:
+        PRODUCT_NAME: Notakase
+        PRODUCT_BUNDLE_IDENTIFIER: dev.notakase.mac
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: "YES"
+        INFOPLIST_KEY_LSApplicationCategoryType: "public.app-category.productivity"
+        INFOPLIST_KEY_NSHumanReadableCopyright: ""
+        ENABLE_HARDENED_RUNTIME: "NO"
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        SWIFT_VERSION: "5.0"
+
+  NotakaseiOS:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources/NotakaseiOS
+        excludes:
+          - Info.plist
+    dependencies:
+      - package: NotakaseCore
+    settings:
+      base:
+        PRODUCT_NAME: Notakase
+        PRODUCT_BUNDLE_IDENTIFIER: dev.notakase.ios
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: "NO"
+        INFOPLIST_FILE: Sources/NotakaseiOS/Info.plist
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SWIFT_VERSION: "5.0"
