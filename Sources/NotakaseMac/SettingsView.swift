@@ -6,7 +6,9 @@ import UniformTypeIdentifiers
 struct SettingsView: View {
     @ObservedObject var store: NotakaseStore
     @ObservedObject var syncFolder: SyncFolder
+    @ObservedObject var todokase: TodokaseTasks
     @State private var showPicker = false
+    @State private var showTasksPicker = false
 
     private var theme: Theme { store.theme }
 
@@ -52,10 +54,12 @@ struct SettingsView: View {
                 }
             }
 
+            todokaseSection
+
             Spacer()
         }
         .padding(24)
-        .frame(width: 540, height: 340)
+        .frame(width: 540, height: 470)
         .background(theme.bgColor)
         .foregroundStyle(theme.fgColor)
         .preferredColorScheme(theme.isDark ? .dark : .light)
@@ -66,6 +70,68 @@ struct SettingsView: View {
         ) { result in
             if case .success(let urls) = result, let url = urls.first {
                 syncFolder.setFolder(url)
+            }
+        }
+        .fileImporter(
+            isPresented: $showTasksPicker,
+            allowedContentTypes: [.data],
+            allowsMultipleSelection: false
+        ) { result in
+            if case .success(let urls) = result, let url = urls.first {
+                todokase.setFile(url)
+            }
+        }
+    }
+
+    private var todokaseSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Divider().overlay(theme.borderColor).padding(.vertical, 4)
+
+            Text("TODOKASE TASKS")
+                .font(.system(size: 10, design: .monospaced))
+                .tracking(1.3)
+                .foregroundStyle(theme.faintColor)
+
+            Text(
+                "Point at todokase's tasks.automerge to embed live task lists in a note with a ```todokase fenced block."
+            )
+            .font(.system(size: 12.5, design: .monospaced))
+            .foregroundStyle(theme.fgMutedColor)
+            .lineSpacing(4)
+            .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 10) {
+                Button(action: { showTasksPicker = true }) {
+                    Text(todokase.isSet ? "Change File…" : "Choose tasks.automerge…")
+                        .font(.system(size: 12.5, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(theme.bgColor)
+                        .padding(.horizontal, 14).padding(.vertical, 8)
+                        .background(theme.accentColor)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                .buttonStyle(.plain)
+
+                if todokase.isSet {
+                    Button(action: { todokase.clearFile() }) {
+                        Text("Clear")
+                            .font(.system(size: 12.5, design: .monospaced))
+                            .foregroundStyle(theme.fgMutedColor)
+                            .padding(.horizontal, 14).padding(.vertical, 8)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(theme.borderColor, lineWidth: 1))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            if todokase.isSet {
+                Text(todokase.displayPath)
+                    .font(.system(size: 11, design: .monospaced))
+                    .foregroundStyle(theme.faintColor)
+                    .lineLimit(1)
+                    .truncationMode(.middle)
+                    .textSelection(.enabled)
             }
         }
     }

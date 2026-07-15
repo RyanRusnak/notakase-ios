@@ -110,6 +110,24 @@ Document schema (ROOT map): `body` (Text — the markdown), `path` (String, e.g.
 The engine lives in `AutomergeVault` (core), watched by `FolderWatcher`, and is
 covered by unit tests. `MarkdownVault` remains for its path/title helpers.
 
+## Embedding todokase tasks
+
+A note can embed a live task list from [todokase](https://github.com/RyanRusnak/todarchy-ios)
+with a fenced `todokase` block:
+
+````markdown
+```todokase
+project: notakase
+status: open
+```
+````
+
+`status` is `open` (default), `done`, or `all`; a bare line is shorthand for the
+project name. The block renders as a live checklist read from todokase's
+`tasks.automerge` — point at it once under **Settings → Todokase Tasks**. It's
+read-only (notakase never writes the task store). The reader is `TodokaseTasks`
+(core) and the renderer is `TodokaseBlockView`.
+
 ## Deep links
 
 The iOS app registers the `notakase://` URL scheme. `notakase://wiki/<title>`

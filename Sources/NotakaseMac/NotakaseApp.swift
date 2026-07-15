@@ -5,11 +5,13 @@ import SwiftUI
 struct NotakaseApp: App {
     @StateObject private var store = NotakaseStore()
     @StateObject private var syncFolder = SyncFolder()
+    @StateObject private var todokase = TodokaseTasks()
 
     var body: some Scene {
         WindowGroup {
             RootView(store: store)
                 .environmentObject(syncFolder)
+                .environmentObject(todokase)
                 .frame(minWidth: 900, minHeight: 560)
         }
         .windowStyle(.hiddenTitleBar)
@@ -19,7 +21,7 @@ struct NotakaseApp: App {
         }
 
         Settings {
-            SettingsView(store: store, syncFolder: syncFolder)
+            SettingsView(store: store, syncFolder: syncFolder, todokase: todokase)
         }
     }
 }

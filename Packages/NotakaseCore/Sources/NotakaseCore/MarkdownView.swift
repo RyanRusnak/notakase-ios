@@ -186,7 +186,11 @@ public struct BlockView: View {
             .padding(.bottom, 18)
 
         case .code(let lang, let text, _):
-            codeBlock(lang: lang, text: text)
+            if lang.lowercased() == "todokase" {
+                TodokaseBlockView(config: text, theme: theme, baseSize: baseSize)
+            } else {
+                codeBlock(lang: lang, text: text)
+            }
 
         case .list(let ordered, let items, _):
             listBlock(ordered: ordered, items: items)

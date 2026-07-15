@@ -5,12 +5,14 @@ import SwiftUI
 struct NotakaseApp: App {
     @StateObject private var store = NotakaseStore()
     @StateObject private var syncFolder = SyncFolder()
+    @StateObject private var todokase = TodokaseTasks()
 
     var body: some Scene {
         WindowGroup {
             LibraryView()
                 .environmentObject(store)
                 .environmentObject(syncFolder)
+                .environmentObject(todokase)
                 .preferredColorScheme(store.theme.isDark ? .dark : .light)
                 .onOpenURL { store.handleDeepLink($0) }
         }

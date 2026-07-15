@@ -11,6 +11,7 @@ enum LibraryRoute: Hashable {
 struct LibraryView: View {
     @EnvironmentObject var store: NotakaseStore
     @EnvironmentObject var syncFolder: SyncFolder
+    @EnvironmentObject var todokase: TodokaseTasks
     @State private var search = ""
     @State private var path: [LibraryRoute] = []
     @State private var showSettings = false
@@ -60,6 +61,7 @@ struct LibraryView: View {
             SettingsSheet(onClose: { showSettings = false })
                 .environmentObject(store)
                 .environmentObject(syncFolder)
+                .environmentObject(todokase)
                 .preferredColorScheme(theme.isDark ? .dark : .light)
         }
         .onChange(of: store.pendingOpenNoteID) { _, id in
@@ -76,6 +78,9 @@ struct LibraryView: View {
             #if DEBUG
             if let p = ProcessInfo.processInfo.environment["NK_FOLDER"] {
                 syncFolder.setFolder(URL(fileURLWithPath: p, isDirectory: true))
+            }
+            if let p = ProcessInfo.processInfo.environment["NK_TASKS"] {
+                todokase.setFile(URL(fileURLWithPath: p))
             }
             #endif
             #if DEBUG

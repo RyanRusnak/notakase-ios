@@ -4,6 +4,7 @@ import SwiftUI
 struct RootView: View {
     @ObservedObject var store: NotakaseStore
     @EnvironmentObject var syncFolder: SyncFolder
+    @EnvironmentObject var todokase: TodokaseTasks
     @StateObject private var model: DesktopModel
 
     init(store: NotakaseStore) {
@@ -66,6 +67,9 @@ struct RootView: View {
             #if DEBUG
             if let p = ProcessInfo.processInfo.environment["NK_FOLDER"] {
                 syncFolder.setFolder(URL(fileURLWithPath: p, isDirectory: true))
+            }
+            if let p = ProcessInfo.processInfo.environment["NK_TASKS"] {
+                todokase.setFile(URL(fileURLWithPath: p))
             }
             #endif
         }
