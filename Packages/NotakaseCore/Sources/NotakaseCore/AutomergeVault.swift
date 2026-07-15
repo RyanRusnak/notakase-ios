@@ -134,6 +134,22 @@ public enum AutomergeVault {
         try createNote(in: root, dir: sub.map { [folder, $0] } ?? [folder], title: title)
     }
 
+    /// Move a note to a new folder path by rewriting its stored `path`
+    /// (keeping the same file name). Unlike ``write(note:to:)``, this
+    /// deliberately changes `path`. A `dir` of `[]` files it at the top level.
+    public static func move(
+        noteID id: String, to dir: [String], fileName: String, in root: URL
+    ) throws {
+        let file = fileURL(for: id, in: root)
+        guard let data = try? Data(contentsOf: file), let doc = try? Document(data) else {
+            return
+        }
+        let newPath = (dir + [fileName]).joined(separator: "/")
+        try doc.put(obj: .ROOT, key: "path", value: .String(newPath))
+        try doc.put(obj: .ROOT, key: "modified", value: .Int(nowMS()))
+        try doc.save().write(to: file, options: .atomic)
+    }
+
     /// Tombstone a note so the deletion propagates to other devices.
     public static func delete(noteID id: String, in root: URL) throws {
         let file = fileURL(for: id, in: root)
@@ -182,12 +198,11 @@ public enum AutomergeVault {
     }
 
     /// The folder components of a stored path, at any depth. A path with no
-    /// directory (a root-level file) is surfaced under a synthetic "Notes"
-    /// folder, matching how the app has always shown loose files.
+    /// directory (a root-level file) has no components — it's a loose note that
+    /// lives at the top level until filed into a folder.
     static func dirComponents(forPath path: String) -> [String] {
         let comps = path.split(separator: "/").map(String.init)
-        guard comps.count > 1 else { return ["Notes"] }
-        return Array(comps.dropLast())
+        return comps.count > 1 ? Array(comps.dropLast()) : []
     }
 
     /// The final path component (the file name).

@@ -21,6 +21,10 @@ final class DesktopModel: ObservableObject {
     @Published var themePickerOpen = false
     @Published var keysOpen = false
     @Published var collapsed: Set<String> = []
+    // Send-to overlay (move the open note to a folder), opened with `s`.
+    @Published var sendToOpen = false
+    @Published var sendToQuery = ""
+    @Published var sendToSel = 0
 
     struct Creating: Equatable {
         enum Kind { case note, folder }
@@ -76,6 +80,32 @@ final class DesktopModel: ObservableObject {
         paletteOpen.toggle()
         pq = ""
         selIndex = 0
+    }
+
+    // MARK: send-to (move the open note)
+    func label(forDir dir: [String]) -> String {
+        dir.isEmpty ? "Top level" : dir.joined(separator: " / ")
+    }
+
+    /// Destinations for the open note: top level + every folder, minus the
+    /// note's current folder, filtered by the query.
+    func sendToDestinations() -> [[String]] {
+        let q = sendToQuery.lowercased().trimmingCharacters(in: .whitespaces)
+        let cur = current.dir
+        return ([[]] + store.folderPaths)
+            .filter { $0 != cur }
+            .filter { q.isEmpty || label(forDir: $0).lowercased().contains(q) }
+    }
+
+    func openSendTo() {
+        sendToQuery = ""
+        sendToSel = 0
+        sendToOpen = true
+    }
+
+    func sendCurrentTo(_ dir: [String]) {
+        store.moveNote(id: openId, to: dir)
+        sendToOpen = false
     }
 
     func toggleFolder(_ path: String) {
@@ -216,6 +246,26 @@ final class DesktopModel: ObservableObject {
                 return false
             }
         }
+        if sendToOpen {
+            let dests = sendToDestinations()
+            switch code {
+            case KeyCode.escape:
+                sendToOpen = false
+                return true
+            case KeyCode.arrowDown:
+                sendToSel = min(dests.count - 1, sendToSel + 1)
+                return true
+            case KeyCode.arrowUp:
+                sendToSel = max(0, sendToSel - 1)
+                return true
+            case KeyCode.ret:
+                let idx = min(sendToSel, dests.count - 1)
+                if dests.indices.contains(idx) { sendCurrentTo(dests[idx]) }
+                return true
+            default:
+                return false
+            }
+        }
         if Self.isEditingText() {
             if code == KeyCode.escape {
                 NSApp.keyWindow?.makeFirstResponder(nil)
@@ -225,6 +275,7 @@ final class DesktopModel: ObservableObject {
         }
         switch chars {
         case "i": insertMode = true; return true
+        case "s": openSendTo(); return true
         case "t": cycleTheme(); return true
         case "j": moveBlock(1); return true
         case "k": moveBlock(-1); return true

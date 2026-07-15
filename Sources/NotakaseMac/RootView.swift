@@ -53,12 +53,18 @@ struct RootView: View {
                 CommandPaletteView(model: model, theme: theme)
             }
         }
+        .overlay {
+            if model.sendToOpen {
+                SendToView(model: model, theme: theme)
+            }
+        }
         .onWikiLink { title in model.openByTitle(title) }
         .background(
             KeyCatcher { event in model.handleKey(event) }
                 .frame(width: 0, height: 0)
         )
         .animation(.easeOut(duration: 0.12), value: model.paletteOpen)
+        .animation(.easeOut(duration: 0.12), value: model.sendToOpen)
         .animation(.easeOut(duration: 0.12), value: model.keysOpen)
         .animation(.easeOut(duration: 0.12), value: model.themePickerOpen)
         .preferredColorScheme(theme.isDark ? .dark : .light)

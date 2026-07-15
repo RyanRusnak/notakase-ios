@@ -35,6 +35,12 @@ struct SidebarView: View {
         let cr = model.creating
         var rows: [Row] = []
 
+        // Loose notes at the top level (no folder) come first so they're
+        // easy to find and file away later.
+        for n in visible where n.dir.isEmpty {
+            rows.append(.note(note: n, depth: 0, active: n.id == model.current.id))
+        }
+
         // Top-level folders: the explicit order first, then any surfaced by
         // notes that aren't already listed.
         var tops = store.folderOrder
@@ -190,6 +196,19 @@ struct SidebarView: View {
         }
     }
 
+    /// Right-click "Move to" menu for a note row. `s` opens the same set as a
+    /// keyboard-driven overlay.
+    @ViewBuilder
+    private func moveMenu(for note: Note) -> some View {
+        Text("Move to")
+        if !note.dir.isEmpty {
+            Button("Top level") { store.moveNote(id: note.id, to: []) }
+        }
+        ForEach(store.folderPaths.filter { $0 != note.dir }, id: \.self) { dir in
+            Button(dir.joined(separator: " / ")) { store.moveNote(id: note.id, to: dir) }
+        }
+    }
+
     @ViewBuilder
     private func rowView(_ row: Row) -> some View {
         switch row {
@@ -245,6 +264,7 @@ struct SidebarView: View {
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 7))
             }
+            .contextMenu { moveMenu(for: n) }
 
         case .input(let kind, let depth, let placeholder):
             HStack(spacing: 7) {

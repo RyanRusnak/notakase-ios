@@ -21,8 +21,8 @@ final class AutomergeVaultTests: XCTestCase {
     }
 
     func testPathMapsToFullDepthDir() {
-        // A loose root file is surfaced under a synthetic "Notes" folder.
-        XCTAssertEqual(AutomergeVault.dirComponents(forPath: "inbox.md"), ["Notes"])
+        // A loose root file has no folder — it lives at the top level.
+        XCTAssertEqual(AutomergeVault.dirComponents(forPath: "inbox.md"), [])
         XCTAssertEqual(AutomergeVault.fileName(forPath: "inbox.md"), "inbox.md")
 
         XCTAssertEqual(
@@ -90,6 +90,30 @@ final class AutomergeVaultTests: XCTestCase {
         XCTAssertEqual(got.folder, "Projects")
         XCTAssertEqual(got.sub, "client")
         XCTAssertTrue(got.body.contains("rewritten body"))
+    }
+
+    func testMoveRewritesPathAndPersists() throws {
+        let root = try makeTempFolder()
+        defer { try? FileManager.default.removeItem(at: root) }
+
+        // Start at the top level (no folder).
+        let note = try AutomergeVault.createNote(in: root, dir: [], title: "Loose")
+        XCTAssertEqual(try AutomergeVault.load(from: root).notes.first?.dir, [])
+
+        // Move it into a nested folder.
+        try AutomergeVault.move(
+            noteID: note.id, to: ["Projects", "client"],
+            fileName: note.fileName, in: root)
+
+        let got = try XCTUnwrap(
+            AutomergeVault.load(from: root).notes.first { $0.id == note.id })
+        XCTAssertEqual(got.dir, ["Projects", "client"])
+
+        // And back to the top level.
+        try AutomergeVault.move(
+            noteID: note.id, to: [], fileName: got.fileName, in: root)
+        let back = try AutomergeVault.load(from: root).notes.first { $0.id == note.id }
+        XCTAssertEqual(back?.dir, [])
     }
 
     func testDeletedNotesAreHidden() throws {

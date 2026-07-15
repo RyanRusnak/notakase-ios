@@ -177,6 +177,33 @@ public final class NotakaseStore: ObservableObject {
         folders.append(name)
     }
 
+    /// Every folder path that currently holds a note, at any depth (each
+    /// prefix counts), plus the known top-level folders — the destinations a
+    /// note can be sent to. Sorted; the top level (`[]`) is not included.
+    public var folderPaths: [[String]] {
+        var set = Set<[String]>()
+        for n in notes where !n.dir.isEmpty {
+            for depth in 1...n.dir.count { set.insert(Array(n.dir.prefix(depth))) }
+        }
+        for f in folders { set.insert([f]) }
+        return set.sorted {
+            $0.joined(separator: "/") < $1.joined(separator: "/")
+        }
+    }
+
+    /// Move a note to a folder path (`[]` = top level), rewriting its on-disk
+    /// `path` when folder-backed.
+    public func moveNote(id: String, to dir: [String]) {
+        guard let i = notes.firstIndex(where: { $0.id == id }) else { return }
+        guard notes[i].dir != dir else { return }
+        let fileName = notes[i].fileName
+        notes[i].dir = dir
+        if let url = folderURL {
+            try? AutomergeVault.move(noteID: id, to: dir, fileName: fileName, in: url)
+        }
+        if let top = dir.first, !folders.contains(top) { folders.append(top) }
+    }
+
     /// Replace a note's body (used by the iOS inline editor). Writes to disk
     /// when folder-backed.
     public func updateBody(id: String, _ body: String) {

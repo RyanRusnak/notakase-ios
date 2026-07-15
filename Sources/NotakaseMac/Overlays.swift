@@ -82,6 +82,84 @@ struct CommandPaletteView: View {
     }
 }
 
+// MARK: - Send-to (move note) picker
+
+struct SendToView: View {
+    @ObservedObject var model: DesktopModel
+    let theme: Theme
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        let dests = model.sendToDestinations()
+        let sel = min(model.sendToSel, max(0, dests.count - 1))
+        ZStack(alignment: .top) {
+            Color.black.opacity(0.45)
+                .ignoresSafeArea()
+                .onTapGesture { model.sendToOpen = false }
+            VStack(spacing: 0) {
+                HStack(spacing: 10) {
+                    Text("→").foregroundStyle(theme.accentColor).font(.system(size: 14))
+                    TextField("Send “\(model.current.title)” to…", text: $model.sendToQuery)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: 14, design: .monospaced))
+                        .foregroundStyle(theme.fgColor)
+                        .focused($focused)
+                        .onChange(of: model.sendToQuery) { model.sendToSel = 0 }
+                    Text("esc")
+                        .font(.system(size: 10, design: .monospaced))
+                        .foregroundStyle(theme.faintColor)
+                        .padding(.horizontal, 6).padding(.vertical, 2)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 4)
+                                .stroke(theme.borderColor, lineWidth: 1))
+                }
+                .padding(.horizontal, 18).padding(.vertical, 15)
+                .overlay(alignment: .bottom) {
+                    Rectangle().fill(theme.borderColor).frame(height: 1)
+                }
+
+                ScrollView {
+                    VStack(spacing: 0) {
+                        ForEach(Array(dests.enumerated()), id: \.offset) { i, dir in
+                            Button(action: { model.sendCurrentTo(dir) }) {
+                                HStack(spacing: 11) {
+                                    Text(dir.isEmpty ? "⌂" : "▤")
+                                        .font(.system(size: 11))
+                                        .foregroundStyle(theme.faintColor)
+                                        .frame(width: 16)
+                                    Text(model.label(forDir: dir))
+                                        .lineLimit(1)
+                                    Spacer(minLength: 0)
+                                }
+                                .font(.system(size: 13, design: .monospaced))
+                                .foregroundStyle(i == sel ? theme.fgColor : theme.fgMutedColor)
+                                .padding(.horizontal, 12).padding(.vertical, 10)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(
+                                    i == sel ? theme.accentColor.opacity(0.16) : .clear
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 9))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(6)
+                }
+                .frame(maxHeight: 300)
+            }
+            .frame(width: 460)
+            .background(theme.elevatedColor)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14).stroke(theme.borderColor, lineWidth: 1)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .shadow(color: .black.opacity(0.55), radius: 35, y: 24)
+            .padding(.top, 120)
+        }
+        .onAppear { focused = true }
+    }
+}
+
 // MARK: - Keyboard shortcuts sheet
 
 struct KeyboardSheetView: View {

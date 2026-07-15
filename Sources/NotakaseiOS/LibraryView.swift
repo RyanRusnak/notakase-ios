@@ -46,7 +46,9 @@ struct LibraryView: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 120)
                 }
-                floatingAdd(dir: [store.folderOrder.first ?? "Daily"])
+                // New notes from the index land at the top level; move them
+                // into a folder later via long-press.
+                floatingAdd(dir: [])
             }
             .navigationBarHidden(true)
             .navigationDestination(for: LibraryRoute.self) { route in
@@ -170,6 +172,7 @@ struct LibraryView: View {
                         pathLabel: note.folderPath, theme: theme)
                 }
                 .buttonStyle(.plain)
+                .contextMenu { NoteMoveMenu(note: note) }
             }
         }
         .padding(.top, 18)
@@ -265,6 +268,7 @@ struct FolderContents: View {
                     NoteCard(note: note, indexInGroup: idx, theme: theme)
                 }
                 .buttonStyle(.plain)
+                .contextMenu { NoteMoveMenu(note: note) }
             }
             if children.isEmpty && directNotes.isEmpty {
                 Text("Empty folder")
@@ -344,6 +348,29 @@ struct FolderScreen: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(theme.bgColor, for: .navigationBar)
         .tint(theme.accentColor)
+    }
+}
+
+/// Long-press (iOS) menu to file a note into a folder or the top level.
+struct NoteMoveMenu: View {
+    @EnvironmentObject var store: NotakaseStore
+    let note: Note
+
+    var body: some View {
+        Section("Move to") {
+            if !note.dir.isEmpty {
+                Button {
+                    store.moveNote(id: note.id, to: [])
+                } label: { Label("Top level", systemImage: "tray") }
+            }
+            ForEach(store.folderPaths.filter { $0 != note.dir }, id: \.self) { dir in
+                Button {
+                    store.moveNote(id: note.id, to: dir)
+                } label: {
+                    Label(dir.joined(separator: " / "), systemImage: "folder")
+                }
+            }
+        }
     }
 }
 
