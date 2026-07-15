@@ -6,6 +6,7 @@ struct NotakaseApp: App {
     @StateObject private var store = NotakaseStore()
     @StateObject private var syncFolder = SyncFolder()
     @StateObject private var todokase = TodokaseTasks()
+    @Environment(\.scenePhase) private var scenePhase
 
     var body: some Scene {
         WindowGroup {
@@ -15,6 +16,15 @@ struct NotakaseApp: App {
                 .environmentObject(todokase)
                 .preferredColorScheme(store.theme.isDark ? .dark : .light)
                 .onOpenURL { store.handleDeepLink($0) }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            // Re-read the sync folder when returning to the foreground so edits
+            // made on another device (or in-place file updates the folder
+            // watcher can't see) show up. Also refresh embedded task lists.
+            if phase == .active {
+                store.reloadFromDisk()
+                todokase.reload()
+            }
         }
     }
 }

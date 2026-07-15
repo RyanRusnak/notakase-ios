@@ -46,6 +46,11 @@ struct LibraryView: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 120)
                 }
+                .refreshable {
+                    // Pull down to re-read the folder + task store on demand.
+                    store.reloadFromDisk()
+                    todokase.reload()
+                }
                 // New notes from the index land at the top level; move them
                 // into a folder later via long-press.
                 floatingAdd(dir: [])
