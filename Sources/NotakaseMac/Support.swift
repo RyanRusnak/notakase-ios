@@ -38,13 +38,27 @@ struct KeyCatcher: NSViewRepresentable {
     func makeCoordinator() -> Coordinator { Coordinator() }
 
     func makeNSView(context: Context) -> NSView {
-        let view = NSView()
+        let view = FirstResponderView()
         context.coordinator.monitor = NSEvent.addLocalMonitorForEvents(
             matching: .keyDown
         ) { event in
             (context.coordinator.onKey?(event) ?? false) ? nil : event
         }
+        // Claim first responder so the sidebar search field doesn't auto-focus
+        // on launch and swallow the vim navigation keys.
+        DispatchQueue.main.async { [weak view] in
+            if let view, let window = view.window,
+                window.firstResponder is NSTextView == false
+            {
+                window.makeFirstResponder(view)
+            }
+        }
         return view
+    }
+
+    /// A zero-size view that can hold first responder (so no text field does).
+    final class FirstResponderView: NSView {
+        override var acceptsFirstResponder: Bool { true }
     }
 
     func updateNSView(_ nsView: NSView, context: Context) {
