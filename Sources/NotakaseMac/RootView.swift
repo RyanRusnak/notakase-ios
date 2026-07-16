@@ -99,7 +99,7 @@ struct TopBar: View {
         let n = model.current
         HStack(spacing: 14) {
             Text("notakase  ›  \((n.dir + [n.title]).joined(separator: "  ›  "))")
-                .font(.system(size: 12, design: .monospaced))
+                .font(Typo.mono(12))
                 .foregroundStyle(theme.faintColor)
                 .lineLimit(1)
                 .truncationMode(.tail)
@@ -109,7 +109,7 @@ struct TopBar: View {
                 ForEach(hints, id: \.0) { hint in
                     HStack(spacing: 5) {
                         Text(hint.0)
-                            .font(.system(size: 10.5, design: .monospaced))
+                            .font(Typo.mono(10.5))
                             .foregroundStyle(theme.fgMutedColor)
                             .padding(.horizontal, 6).padding(.vertical, 1)
                             .background(theme.elevatedColor)
@@ -124,7 +124,7 @@ struct TopBar: View {
                 }
                 HoverButton(action: { model.keysOpen = true }) { hovering in
                     Text("?")
-                        .font(.system(size: 11, design: .monospaced))
+                        .font(Typo.mono(11))
                         .foregroundStyle(theme.fgMutedColor)
                         .frame(width: 24, height: 24)
                         .background(theme.elevatedColor)
@@ -138,7 +138,7 @@ struct TopBar: View {
             }
 
             Text("\(n.wordCount) words · \(n.readMinutes) min")
-                .font(.system(size: 12, design: .monospaced))
+                .font(Typo.mono(12))
                 .foregroundStyle(theme.faintColor)
                 .lineLimit(1)
                 .padding(.leading, 14)

@@ -73,18 +73,18 @@ public struct TodokaseBlockView: View {
         HStack(spacing: 7) {
             Text("◫").foregroundStyle(theme.accentColor)
             Text("todokase")
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .font(Typo.mono(10, weight: .bold))
                 .tracking(0.8)
                 .foregroundStyle(theme.faintColor)
             if let p = embed.project {
                 Text("· \(p)")
-                    .font(.system(size: 10, design: .monospaced))
+                    .font(Typo.mono(10))
                     .foregroundStyle(theme.faintColor)
             }
             Spacer(minLength: 0)
             if embed.project != nil && todokase.isSet {
                 Text(embed.status.rawValue)
-                    .font(.system(size: 9.5, design: .monospaced))
+                    .font(Typo.mono(9.5))
                     .foregroundStyle(theme.faintColor)
             }
         }
@@ -104,7 +104,7 @@ public struct TodokaseBlockView: View {
                         Checkbox(done: task.done, theme: theme)
                             .padding(.top, 3)
                         Text(task.title)
-                            .font(.system(size: baseSize * 0.92, design: .monospaced))
+                            .font(Typo.mono(baseSize * 0.92))
                             .strikethrough(task.done, color: theme.faintColor)
                             .foregroundStyle(task.done ? theme.faintColor : theme.fgColor)
                             .fixedSize(horizontal: false, vertical: true)
@@ -119,7 +119,7 @@ public struct TodokaseBlockView: View {
 
     private func hint(_ s: String) -> some View {
         Text(s)
-            .font(.system(size: 12, design: .monospaced))
+            .font(Typo.mono(12))
             .foregroundStyle(theme.faintColor)
             .fixedSize(horizontal: false, vertical: true)
     }

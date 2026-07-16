@@ -132,11 +132,11 @@ struct LibraryView: View {
 
             HStack(alignment: .firstTextBaseline) {
                 Text("Notakase")
-                    .font(.system(size: 34, weight: .semibold, design: .monospaced))
+                    .font(Typo.mono(34, weight: .semibold))
                     .foregroundStyle(theme.fgColor)
                 Spacer()
                 Text("\(store.notes.count) · \(store.folderOrder.count)")
-                    .font(.system(size: 11, design: .monospaced))
+                    .font(Typo.mono(11))
                     .foregroundStyle(theme.faintColor)
             }
             .padding(.top, 6)
@@ -166,7 +166,7 @@ struct LibraryView: View {
         return VStack(alignment: .leading, spacing: 12) {
             if hits.isEmpty {
                 Text("No matches")
-                    .font(.system(size: 13, design: .monospaced))
+                    .font(Typo.mono(13))
                     .foregroundStyle(theme.faintColor)
                     .padding(.top, 24)
             }
@@ -200,7 +200,7 @@ struct LibraryView: View {
             HStack(spacing: 6) {
                 Circle().fill(theme.accentColor).frame(width: 9, height: 9)
                 Text(theme.short)
-                    .font(.system(size: 11, design: .monospaced))
+                    .font(Typo.mono(11))
                     .foregroundStyle(theme.fgMutedColor)
             }
             .padding(.horizontal, 12).padding(.vertical, 7)
@@ -277,7 +277,7 @@ struct FolderContents: View {
             }
             if children.isEmpty && directNotes.isEmpty {
                 Text("Empty folder")
-                    .font(.system(size: 13, design: .monospaced))
+                    .font(Typo.mono(13))
                     .foregroundStyle(theme.faintColor)
                     .padding(.top, 24)
             }
@@ -323,7 +323,7 @@ struct FolderScreen: View {
                 VStack(alignment: .leading, spacing: 0) {
                     if dir.count > 1 {
                         Text(dir.joined(separator: " / "))
-                            .font(.system(size: 11, design: .monospaced))
+                            .font(Typo.mono(11))
                             .foregroundStyle(theme.faintColor)
                             .lineLimit(1)
                             .truncationMode(.head)
@@ -395,12 +395,12 @@ struct FolderRow: View {
                 .foregroundStyle(theme.accentColor)
                 .opacity(0.85)
             Text(dir.last ?? "")
-                .font(.system(size: 16, weight: .medium, design: .monospaced))
+                .font(Typo.mono(16, weight: .medium))
                 .foregroundStyle(theme.fgColor)
                 .lineLimit(1)
             Spacer(minLength: 0)
             Text("\(count)")
-                .font(.system(size: 12, design: .monospaced))
+                .font(Typo.mono(12))
                 .foregroundStyle(theme.faintColor)
             Image(systemName: "chevron.right")
                 .font(.system(size: 12, weight: .semibold))
@@ -432,13 +432,13 @@ struct NoteCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 if let pathLabel, !pathLabel.isEmpty {
                     Text(pathLabel)
-                        .font(.system(size: 10, design: .monospaced))
+                        .font(Typo.mono(10))
                         .foregroundStyle(theme.faintColor)
                         .lineLimit(1)
                         .truncationMode(.head)
                 }
                 Text(note.title)
-                    .font(.system(size: 17, weight: .semibold, design: .monospaced))
+                    .font(Typo.mono(17, weight: .semibold))
                     .foregroundStyle(theme.fgColor)
                     .lineLimit(1)
                 Text(iOSHelpers.snippet(note))
@@ -448,7 +448,7 @@ struct NoteCard: View {
                     .multilineTextAlignment(.leading)
                 HStack(spacing: 9) {
                     Text(note.updated)
-                        .font(.system(size: 10.5, design: .monospaced))
+                        .font(Typo.mono(10.5))
                         .foregroundStyle(theme.faintColor)
                     if let tag = iOSHelpers.tag(note) {
                         Text(tag.uppercased())

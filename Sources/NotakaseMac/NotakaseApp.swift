@@ -7,6 +7,8 @@ struct NotakaseApp: App {
     @StateObject private var syncFolder = SyncFolder()
     @StateObject private var todokase = TodokaseTasks()
 
+    init() { NotakaseFonts.register() }
+
     var body: some Scene {
         WindowGroup {
             RootView(store: store)

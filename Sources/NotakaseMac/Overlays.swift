@@ -20,12 +20,12 @@ struct CommandPaletteView: View {
                     Text("⌕").foregroundStyle(theme.faintColor).font(.system(size: 14))
                     TextField("Jump to a note or run a command…", text: $model.pq)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 14, design: .monospaced))
+                        .font(Typo.mono(14))
                         .foregroundStyle(theme.fgColor)
                         .focused($focused)
                         .onChange(of: model.pq) { model.selIndex = 0 }
                     Text("esc")
-                        .font(.system(size: 10, design: .monospaced))
+                        .font(Typo.mono(10))
                         .foregroundStyle(theme.faintColor)
                         .padding(.horizontal, 6).padding(.vertical, 2)
                         .overlay(
@@ -50,10 +50,10 @@ struct CommandPaletteView: View {
                                         .lineLimit(1)
                                     Spacer(minLength: 0)
                                     Text(it.hint)
-                                        .font(.system(size: 10.5, design: .monospaced))
+                                        .font(Typo.mono(10.5))
                                         .foregroundStyle(theme.faintColor)
                                 }
-                                .font(.system(size: 13, design: .monospaced))
+                                .font(Typo.mono(13))
                                 .foregroundStyle(i == sel ? theme.fgColor : theme.fgMutedColor)
                                 .padding(.horizontal, 12).padding(.vertical, 10)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -101,12 +101,12 @@ struct SendToView: View {
                     Text("→").foregroundStyle(theme.accentColor).font(.system(size: 14))
                     TextField("Send “\(model.current.title)” to…", text: $model.sendToQuery)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 14, design: .monospaced))
+                        .font(Typo.mono(14))
                         .foregroundStyle(theme.fgColor)
                         .focused($focused)
                         .onChange(of: model.sendToQuery) { model.sendToSel = 0 }
                     Text("esc")
-                        .font(.system(size: 10, design: .monospaced))
+                        .font(Typo.mono(10))
                         .foregroundStyle(theme.faintColor)
                         .padding(.horizontal, 6).padding(.vertical, 2)
                         .overlay(
@@ -131,7 +131,7 @@ struct SendToView: View {
                                         .lineLimit(1)
                                     Spacer(minLength: 0)
                                 }
-                                .font(.system(size: 13, design: .monospaced))
+                                .font(Typo.mono(13))
                                 .foregroundStyle(i == sel ? theme.fgColor : theme.fgMutedColor)
                                 .padding(.horizontal, 12).padding(.vertical, 10)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -175,14 +175,14 @@ struct KeyboardSheetView: View {
                 HStack(spacing: 10) {
                     Circle().fill(theme.accentColor).frame(width: 9, height: 9)
                     Text("Keyboard shortcuts")
-                        .font(.system(size: 16, weight: .semibold, design: .monospaced))
+                        .font(Typo.mono(16, weight: .semibold))
                         .foregroundStyle(theme.fgColor)
                     Text("— from the Omarchy TUI")
-                        .font(.system(size: 11, design: .monospaced))
+                        .font(Typo.mono(11))
                         .foregroundStyle(theme.faintColor)
                     Spacer()
                     Text("? or esc")
-                        .font(.system(size: 10, design: .monospaced))
+                        .font(Typo.mono(10))
                         .foregroundStyle(theme.faintColor)
                         .padding(.horizontal, 6).padding(.vertical, 2)
                         .overlay(
@@ -211,7 +211,7 @@ struct KeyboardSheetView: View {
                                         }
                                         .frame(width: 74, alignment: .leading)
                                         Text(r.action)
-                                            .font(.system(size: 12.5, design: .monospaced))
+                                            .font(Typo.mono(12.5))
                                             .foregroundStyle(theme.fgMutedColor)
                                             .fixedSize(horizontal: false, vertical: true)
                                         Spacer(minLength: 0)
@@ -237,7 +237,7 @@ struct KeyboardSheetView: View {
 
     private func keyCap(_ k: String) -> some View {
         Text(k)
-            .font(.system(size: 11, design: .monospaced))
+            .font(Typo.mono(11))
             .foregroundStyle(theme.fgColor)
             .padding(.horizontal, 7).padding(.vertical, 2)
             .background(theme.sidebarColor)
@@ -278,7 +278,7 @@ struct ThemePickerView: View {
                                             lineWidth: 2
                                         ).scaleEffect(1.4))
                                 Text(t.label)
-                                    .font(.system(size: 12, design: .monospaced))
+                                    .font(Typo.mono(12))
                                     .lineLimit(1)
                                 Spacer(minLength: 0)
                                 if active {

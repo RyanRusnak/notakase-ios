@@ -66,18 +66,18 @@ struct ReaderView: View {
             }
             VStack(spacing: 2) {
                 Text(note.folderPath.isEmpty ? note.folder : note.folderPath)
-                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                    .font(Typo.mono(12, weight: .medium))
                     .foregroundStyle(theme.fgMutedColor)
                     .lineLimit(1)
                     .truncationMode(.head)
                 Text(note.fileName)
-                    .font(.system(size: 10, design: .monospaced))
+                    .font(Typo.mono(10))
                     .foregroundStyle(theme.faintColor)
             }
             .frame(maxWidth: .infinity)
             // Mode indicator + editor toggle, moved up from the old bottom bar.
             Text(editing ? "WRITE" : "READ")
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .font(Typo.mono(10, weight: .bold))
                 .tracking(0.6)
                 .foregroundStyle(theme.bgColor)
                 .padding(.horizontal, 8).padding(.vertical, 3)
@@ -105,7 +105,7 @@ struct ReaderView: View {
     private var content: some View {
         if editing {
             TextEditor(text: $draft)
-                .font(.system(size: 16, design: .monospaced))
+                .font(Typo.mono(16))
                 .foregroundStyle(theme.fgColor)
                 .scrollContentBackground(.hidden)
                 .background(theme.bgColor)
@@ -115,11 +115,11 @@ struct ReaderView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(displayTitle)
-                        .font(.system(size: 29, weight: .semibold, design: .monospaced))
+                        .font(Typo.mono(29, weight: .semibold))
                         .foregroundStyle(theme.fgColor)
                         .padding(.bottom, 6)
                     Text("edited \(note.updated) · \(note.wordCount) words")
-                        .font(.system(size: 11, design: .monospaced))
+                        .font(Typo.mono(11))
                         .foregroundStyle(theme.faintColor)
                         .padding(.bottom, 22)
                     ForEach(Array(bodyBlocks.enumerated()), id: \.offset) { i, block in

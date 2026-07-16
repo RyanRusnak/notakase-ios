@@ -8,6 +8,8 @@ struct NotakaseApp: App {
     @StateObject private var todokase = TodokaseTasks()
     @Environment(\.scenePhase) private var scenePhase
 
+    init() { NotakaseFonts.register() }
+
     var body: some Scene {
         WindowGroup {
             LibraryView()

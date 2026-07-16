@@ -36,24 +36,6 @@ struct SettingsSheet: View {
             }
         }
         .tint(theme.accentColor)
-        .fileImporter(
-            isPresented: $showPicker,
-            allowedContentTypes: [.folder],
-            allowsMultipleSelection: false
-        ) { result in
-            if case .success(let urls) = result, let url = urls.first {
-                syncFolder.setFolder(url)
-            }
-        }
-        .fileImporter(
-            isPresented: $showTasksPicker,
-            allowedContentTypes: [.data],
-            allowsMultipleSelection: false
-        ) { result in
-            if case .success(let urls) = result, let url = urls.first {
-                todokase.setFile(url)
-            }
-        }
     }
 
     private var todokaseSection: some View {
@@ -68,7 +50,7 @@ struct SettingsSheet: View {
 
             if todokase.isSet {
                 Text(todokase.displayPath)
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(Typo.mono(12))
                     .foregroundStyle(theme.faintColor)
                     .lineLimit(1)
                     .truncationMode(.middle)
@@ -77,7 +59,7 @@ struct SettingsSheet: View {
             HStack(spacing: 10) {
                 Button(action: { showTasksPicker = true }) {
                     Text(todokase.isSet ? "Change File…" : "Choose tasks.automerge…")
-                        .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                        .font(Typo.mono(14, weight: .semibold))
                         .foregroundStyle(theme.bgColor)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 11)
@@ -87,7 +69,7 @@ struct SettingsSheet: View {
                 if todokase.isSet {
                     Button(action: { todokase.clearFile() }) {
                         Text("Clear")
-                            .font(.system(size: 14, design: .monospaced))
+                            .font(Typo.mono(14))
                             .foregroundStyle(theme.fgMutedColor)
                             .padding(.horizontal, 18).padding(.vertical, 11)
                             .overlay(
@@ -95,6 +77,17 @@ struct SettingsSheet: View {
                                     .stroke(theme.borderColor, lineWidth: 1))
                     }
                 }
+            }
+        }
+        // Attached here, not on the shared body — two `.fileImporter`s on one
+        // view conflict and one stops opening.
+        .fileImporter(
+            isPresented: $showTasksPicker,
+            allowedContentTypes: [.data],
+            allowsMultipleSelection: false
+        ) { result in
+            if case .success(let urls) = result, let url = urls.first {
+                todokase.setFile(url)
             }
         }
     }
@@ -114,7 +107,7 @@ struct SettingsSheet: View {
             HStack(spacing: 10) {
                 Button(action: { showPicker = true }) {
                     Text(syncFolder.isSet ? "Change Folder…" : "Choose Folder…")
-                        .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                        .font(Typo.mono(14, weight: .semibold))
                         .foregroundStyle(theme.bgColor)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 11)
@@ -124,7 +117,7 @@ struct SettingsSheet: View {
                 if syncFolder.isSet {
                     Button(action: { syncFolder.clearFolder() }) {
                         Text("Clear")
-                            .font(.system(size: 14, design: .monospaced))
+                            .font(Typo.mono(14))
                             .foregroundStyle(theme.fgMutedColor)
                             .padding(.horizontal, 18).padding(.vertical, 11)
                             .overlay(
@@ -132,6 +125,15 @@ struct SettingsSheet: View {
                                     .stroke(theme.borderColor, lineWidth: 1))
                     }
                 }
+            }
+        }
+        .fileImporter(
+            isPresented: $showPicker,
+            allowedContentTypes: [.folder],
+            allowsMultipleSelection: false
+        ) { result in
+            if case .success(let urls) = result, let url = urls.first {
+                syncFolder.setFolder(url)
             }
         }
     }
@@ -143,14 +145,14 @@ struct SettingsSheet: View {
                 .foregroundStyle(syncFolder.isSet ? theme.accentColor : theme.faintColor)
             VStack(alignment: .leading, spacing: 3) {
                 Text(syncFolder.folderName ?? "No folder selected")
-                    .font(.system(size: 15, weight: .semibold, design: .monospaced))
+                    .font(Typo.mono(15, weight: .semibold))
                     .foregroundStyle(theme.fgColor)
                 HStack(spacing: 7) {
                     if syncFolder.isSet {
                         SyncHealthDot(store: store, theme: theme)
                     }
                     Text(syncFolder.isSet ? syncFolder.displayPath : "Choose a folder to begin")
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(Typo.mono(12))
                         .foregroundStyle(theme.faintColor)
                         .lineLimit(1)
                         .truncationMode(.middle)
@@ -177,7 +179,7 @@ struct SettingsSheet: View {
                         HStack(spacing: 12) {
                             Circle().fill(t.accentColor).frame(width: 12, height: 12)
                             Text(t.label)
-                                .font(.system(size: 14, design: .monospaced))
+                                .font(Typo.mono(14))
                                 .foregroundStyle(theme.fgColor)
                             Spacer()
                             if id == theme.name {

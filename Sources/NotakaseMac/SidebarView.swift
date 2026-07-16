@@ -131,7 +131,7 @@ struct SidebarView: View {
                     .padding([.trailing, .bottom], 3)
             }
             Text("Notakase")
-                .font(.system(size: 18, weight: .semibold, design: .monospaced))
+                .font(Typo.mono(18, weight: .semibold))
                 .foregroundStyle(theme.fgColor)
             Spacer()
         }
@@ -144,11 +144,11 @@ struct SidebarView: View {
             Text("⌕").foregroundStyle(theme.faintColor).font(.system(size: 12))
             TextField("Search", text: $model.search)
                 .textFieldStyle(.plain)
-                .font(.system(size: 12, design: .monospaced))
+                .font(Typo.mono(12))
                 .foregroundStyle(theme.fgColor)
                 .focused($searchFocused)
             Text("⌘K")
-                .font(.system(size: 10, design: .monospaced))
+                .font(Typo.mono(10))
                 .foregroundStyle(theme.faintColor)
                 .padding(.horizontal, 5).padding(.vertical, 1)
                 .overlay(
@@ -180,8 +180,8 @@ struct SidebarView: View {
     private func addButton(glyph: String, action: @escaping () -> Void) -> some View {
         HoverButton(action: action) { hovering in
             HStack(spacing: 0) {
-                Text(glyph).font(.system(size: 11, design: .monospaced))
-                Text("+").font(.system(size: 13, weight: .light, design: .monospaced))
+                Text(glyph).font(Typo.mono(11))
+                Text("+").font(Typo.mono(13, weight: .light))
                     .padding(.leading, -1)
             }
             .foregroundStyle(hovering ? theme.fgColor : theme.fgMutedColor)
@@ -225,13 +225,13 @@ struct SidebarView: View {
                         .foregroundStyle(theme.accentColor)
                         .opacity(0.85)
                     Text(name)
-                        .font(.system(size: 12.5, weight: .medium, design: .monospaced))
+                        .font(Typo.mono(12.5, weight: .medium))
                         .foregroundStyle(theme.fgColor)
                         .lineLimit(1)
                     Spacer(minLength: 0)
                     if count > 0 {
                         Text("\(count)")
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(Typo.mono(10))
                             .foregroundStyle(theme.faintColor)
                     }
                 }
@@ -245,7 +245,7 @@ struct SidebarView: View {
                 HStack(spacing: 7) {
                     Spacer().frame(width: CGFloat(12 + depth * 15))
                     Text(n.title + ".md")
-                        .font(.system(size: 12.5, design: .monospaced))
+                        .font(Typo.mono(12.5))
                         .foregroundStyle(active || hovering ? theme.fgColor : theme.fgMutedColor)
                         .lineLimit(1)
                         .truncationMode(.tail)
@@ -274,7 +274,7 @@ struct SidebarView: View {
                     .font(.system(size: 12)).foregroundStyle(theme.accentColor)
                 TextField(placeholder, text: $model.createValue)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 12.5, design: .monospaced))
+                    .font(Typo.mono(12.5))
                     .foregroundStyle(theme.fgColor)
                     .focused($createFocused)
                     .onSubmit { model.commitCreate() }

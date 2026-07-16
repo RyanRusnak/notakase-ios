@@ -15,7 +15,7 @@ struct StatusBar: View {
                     let active = model.view == v
                     Button(action: { model.setView(v) }) {
                         Text(v.label)
-                            .font(.system(size: 10.5, weight: .bold, design: .monospaced))
+                            .font(Typo.mono(10.5, weight: .bold))
                             .tracking(0.6)
                             .foregroundStyle(active ? theme.bgColor : theme.faintColor)
                             .padding(.horizontal, 13)
@@ -38,7 +38,7 @@ struct StatusBar: View {
                         .font(.system(size: 10))
                         .foregroundStyle(syncFolder.isSet ? theme.accentColor : theme.faintColor)
                     Text(syncFolder.folderName ?? "Sync folder")
-                        .font(.system(size: 11, design: .monospaced))
+                        .font(Typo.mono(11))
                         .lineLimit(1)
                 }
                 .foregroundStyle(hovering ? theme.fgColor : theme.fgMutedColor)
@@ -54,7 +54,7 @@ struct StatusBar: View {
                 HStack(spacing: 7) {
                     Circle().fill(theme.accentColor).frame(width: 7, height: 7)
                     Text(theme.label)
-                        .font(.system(size: 11, design: .monospaced))
+                        .font(Typo.mono(11))
                     Text("▲").font(.system(size: 8)).foregroundStyle(theme.faintColor)
                 }
                 .foregroundStyle(hovering ? theme.fgColor : theme.fgMutedColor)
@@ -75,7 +75,7 @@ struct StatusBar: View {
 
     private func statusText(_ s: String, leadingBorder: Bool = false) -> some View {
         Text(s)
-            .font(.system(size: 11, design: .monospaced))
+            .font(Typo.mono(11))
             .foregroundStyle(theme.faintColor)
             .padding(.horizontal, 12)
             .frame(maxHeight: .infinity)

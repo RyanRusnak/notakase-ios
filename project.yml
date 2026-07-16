@@ -17,6 +17,7 @@ targets:
     platform: macOS
     sources:
       - path: Sources/NotakaseMac
+      - path: Resources/Fonts
     dependencies:
       - package: NotakaseCore
     settings:
@@ -40,6 +41,7 @@ targets:
       - path: Sources/NotakaseiOS
         excludes:
           - Info.plist
+      - path: Resources/Fonts
     dependencies:
       - package: NotakaseCore
     settings:

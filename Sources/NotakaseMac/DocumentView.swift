@@ -25,7 +25,7 @@ struct DocumentView: View {
                 Text("·")
                 Text("edited " + n.updated)
             }
-            .font(.system(size: 11.5, design: .monospaced))
+            .font(Typo.mono(11.5))
             .foregroundStyle(theme.faintColor)
             .padding(.bottom, 26)
 
@@ -70,7 +70,7 @@ struct DocumentView: View {
                     }
                 }
                 Text(url)
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(Typo.mono(12))
                     .foregroundStyle(theme.faintColor)
                     .frame(maxWidth: .infinity)
             }
@@ -88,7 +88,7 @@ struct DocumentView: View {
                     let active = p.id == n.id
                     Button(action: { model.openNote(p.id) }) {
                         Text(p.title)
-                            .font(.system(size: 13, design: .monospaced))
+                            .font(Typo.mono(13))
                             .foregroundStyle(active ? theme.accentColor : theme.fgMutedColor)
                             .padding(.bottom, 4)
                             .overlay(alignment: .bottom) {
@@ -120,7 +120,7 @@ struct DocumentView: View {
                         ? "Built with Notakase · static export"
                         : "Preview — publish this folder to make it a site"
                 )
-                .font(.system(size: 11, design: .monospaced))
+                .font(Typo.mono(11))
                 .foregroundStyle(theme.faintColor)
             }
             .padding(.top, 18)

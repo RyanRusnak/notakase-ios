@@ -50,16 +50,16 @@ extension Markdown {
                 result += AttributedString(s)
             case .bold(let s):
                 var a = AttributedString(s)
-                a.font = .system(size: baseSize, weight: .semibold, design: .monospaced)
+                a.font = Typo.mono(baseSize, weight: .semibold)
                 a.foregroundColor = theme.fgColor
                 result += a
             case .italic(let s):
                 var a = AttributedString(s)
-                a.font = .system(size: baseSize, design: .monospaced).italic()
+                a.font = Typo.mono(baseSize).italic()
                 result += a
             case .code(let s):
                 var a = AttributedString(s)
-                a.font = .system(size: baseSize * 0.82, design: .monospaced)
+                a.font = Typo.mono(baseSize * 0.82)
                 a.foregroundColor = theme.accent2Color
                 a.backgroundColor = theme.elevatedColor
                 result += a
@@ -94,7 +94,7 @@ public struct InlineText: View {
 
     public var body: some View {
         Text(Markdown.attributed(text, theme: theme, baseSize: baseSize))
-            .font(.system(size: baseSize, design: .monospaced))
+            .font(Typo.mono(baseSize))
             .foregroundStyle(theme.fgColor)
             .tint(theme.accentColor)
     }
@@ -129,11 +129,7 @@ public struct BlockView: View {
         switch block {
         case .heading(let level, let text, _):
             InlineText(text, theme: theme, baseSize: headingSize(level))
-                .font(
-                    .system(
-                        size: headingSize(level), weight: .semibold,
-                        design: .monospaced)
-                )
+                .font(Typo.mono(headingSize(level), weight: .semibold))
                 .foregroundStyle(theme.fgColor)
                 .tracking(-0.3)
                 .fixedSize(horizontal: false, vertical: true)
@@ -167,7 +163,7 @@ public struct BlockView: View {
             ZStack {
                 theme.elevatedColor
                 Text(alt.isEmpty ? "image" : alt)
-                    .font(.system(size: 11, design: .monospaced))
+                    .font(Typo.mono(11))
                     .foregroundStyle(theme.faintColor)
                     .padding(.horizontal, 11).padding(.vertical, 5)
                     .background(theme.bgColor)
@@ -208,7 +204,7 @@ public struct BlockView: View {
                             of: "^\\s*(#|//)", options: .regularExpression)
                         != nil
                     Text(ln.isEmpty ? " " : ln)
-                        .font(.system(size: 13.5, design: .monospaced))
+                        .font(Typo.mono(13.5))
                         .foregroundStyle(
                             isComment ? theme.faintColor : theme.fgColor
                         )
@@ -219,7 +215,7 @@ public struct BlockView: View {
             }
             if !lang.isEmpty {
                 Text(lang.uppercased())
-                    .font(.system(size: 10, design: .monospaced))
+                    .font(Typo.mono(10))
                     .tracking(0.8)
                     .foregroundStyle(theme.faintColor)
             }
@@ -250,7 +246,7 @@ public struct BlockView: View {
                         .fixedSize(horizontal: false, vertical: true)
                     } else {
                         Text(ordered ? "\(idx + 1)." : "•")
-                            .font(.system(size: baseSize, design: .monospaced))
+                            .font(Typo.mono(baseSize))
                             .foregroundStyle(theme.faintColor)
                             .frame(minWidth: ordered ? 22 : 14, alignment: .leading)
                         InlineText(
@@ -313,7 +309,7 @@ public struct SourceBlockView: View {
                 ForEach(Array(lines.enumerated()), id: \.offset) { idx, ln in
                     HStack(alignment: .center, spacing: 0) {
                         Text(sourceAttributed(ln))
-                            .font(.system(size: 14.5, design: .monospaced))
+                            .font(Typo.mono(14.5))
                             .fixedSize(horizontal: false, vertical: true)
                         if idx == lines.count - 1 {
                             BlinkingCaret(
