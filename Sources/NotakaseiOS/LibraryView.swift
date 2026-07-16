@@ -335,7 +335,7 @@ struct FolderScreen: View {
                     FolderContents(dir: dir, path: $path)
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 12)
+                .padding(.top, 8)
                 .padding(.bottom, 120)
             }
             Button {
@@ -352,9 +352,25 @@ struct FolderScreen: View {
             }
             .padding(.trailing, 24).padding(.bottom, 24)
         }
-        .navigationTitle("")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(theme.bgColor, for: .navigationBar)
+        // Hidden nav bar so the path header sits at the same spot as the
+        // index; back is a floating button mirroring the add button.
+        .navigationBarHidden(true)
+        .overlay(alignment: .bottomLeading) {
+            Button {
+                if !path.isEmpty { path.removeLast() }
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(theme.fgMutedColor)
+                    .frame(width: 56, height: 56)
+                    .background(theme.elevatedColor)
+                    .clipShape(RoundedRectangle(cornerRadius: 18))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18)
+                            .stroke(theme.borderColor, lineWidth: 1))
+            }
+            .padding(.leading, 24).padding(.bottom, 24)
+        }
         .tint(theme.accentColor)
     }
 }
