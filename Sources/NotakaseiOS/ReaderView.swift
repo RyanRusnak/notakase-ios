@@ -64,17 +64,12 @@ struct ReaderView: View {
                             .stroke(theme.borderColor, lineWidth: 1))
                     .clipShape(RoundedRectangle(cornerRadius: 11))
             }
-            VStack(spacing: 2) {
-                Text(note.folderPath.isEmpty ? note.folder : note.folderPath)
-                    .font(Typo.mono(12, weight: .medium))
-                    .foregroundStyle(theme.fgMutedColor)
-                    .lineLimit(1)
-                    .truncationMode(.head)
-                Text(note.fileName)
-                    .font(Typo.mono(10))
-                    .foregroundStyle(theme.faintColor)
-            }
-            .frame(maxWidth: .infinity)
+            Text(notakasePath(dir: note.dir, file: note.fileName))
+                .font(Typo.mono(12, weight: .medium))
+                .foregroundStyle(theme.fgMutedColor)
+                .lineLimit(1)
+                .truncationMode(.head)
+                .frame(maxWidth: .infinity)
             // Mode indicator + editor toggle, moved up from the old bottom bar.
             Text(editing ? "WRITE" : "READ")
                 .font(Typo.mono(10, weight: .bold))

@@ -8,6 +8,15 @@ enum LibraryRoute: Hashable {
     case note(String)
 }
 
+/// The header path shown as you drill in: `~/notakase` at the root, then the
+/// folder / note path beneath it (mirrors todokase mobile).
+func notakasePath(dir: [String], file: String? = nil) -> String {
+    var p = "~/notakase"
+    for component in dir { p += "/" + component }
+    if let file { p += "/" + file }
+    return p
+}
+
 struct LibraryView: View {
     @EnvironmentObject var store: NotakaseStore
     @EnvironmentObject var syncFolder: SyncFolder
@@ -118,10 +127,7 @@ struct LibraryView: View {
         theme.bgColor.ignoresSafeArea()
     }
 
-    /// `~/notakase_sync`-style path shown in the header (like todokase mobile).
-    private var headerPath: String {
-        syncFolder.isSet ? "~/\(syncFolder.folderName ?? "notes")" : "notakase"
-    }
+    private var headerPath: String { notakasePath(dir: []) }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -320,14 +326,12 @@ struct FolderScreen: View {
             theme.bgColor.ignoresSafeArea()
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    if dir.count > 1 {
-                        Text(dir.joined(separator: " / "))
-                            .font(Typo.mono(11))
-                            .foregroundStyle(theme.faintColor)
-                            .lineLimit(1)
-                            .truncationMode(.head)
-                            .padding(.bottom, 6)
-                    }
+                    Text(notakasePath(dir: dir))
+                        .font(Typo.mono(17, weight: .medium))
+                        .foregroundStyle(theme.fgColor)
+                        .lineLimit(1)
+                        .truncationMode(.head)
+                        .padding(.bottom, 14)
                     FolderContents(dir: dir, path: $path)
                 }
                 .padding(.horizontal, 20)
@@ -348,7 +352,7 @@ struct FolderScreen: View {
             }
             .padding(.trailing, 22).padding(.bottom, 40)
         }
-        .navigationTitle(dir.last ?? "")
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(theme.bgColor, for: .navigationBar)
         .tint(theme.accentColor)
