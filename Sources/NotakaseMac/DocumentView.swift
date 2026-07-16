@@ -57,7 +57,15 @@ struct DocumentView: View {
                 .background(theme.bgColor)
                 .frame(minHeight: 460, alignment: .topLeading)
                 .focused($editorFocused)
-                .onAppear { editorFocused = true }
+                // Defer to the next runloop so focus lands *after* the previous
+                // first responder (the create-name field, or the reader) has
+                // resigned — otherwise the cursor never enters the editor.
+                .onAppear {
+                    DispatchQueue.main.async { editorFocused = true }
+                }
+                .onChange(of: model.openId) {
+                    DispatchQueue.main.async { editorFocused = true }
+                }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
