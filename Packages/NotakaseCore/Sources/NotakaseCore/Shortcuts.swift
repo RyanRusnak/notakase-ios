@@ -52,8 +52,8 @@ public enum Shortcuts {
             rows: [
                 KeyRow(keys: ["J", "K"], action: "Scroll the preview"),
                 KeyRow(keys: ["⌘", "F"], action: "Page-scroll the preview"),
-                KeyRow(keys: ["i"], action: "Insert mode (write)"),
-                KeyRow(keys: ["Esc"], action: "Normal mode"),
+                KeyRow(keys: ["i", "e"], action: "Enter write mode"),
+                KeyRow(keys: ["Esc"], action: "Back to read mode"),
                 KeyRow(keys: ["Tab"], action: "Zen mode (hide the tree)"),
             ]),
         KeyGroup(

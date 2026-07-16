@@ -11,7 +11,7 @@ final class DesktopModel: ObservableObject {
     private var cancellable: AnyCancellable?
 
     @Published var openId = "daily-today"
-    @Published var view: ViewMode = .edit
+    @Published var view: ViewMode = .read
     @Published var insertMode = false
     @Published var activeBlock = 2
     @Published var search = ""
@@ -179,9 +179,6 @@ final class DesktopModel: ObservableObject {
             PaletteItem(icon: "◉", label: "Switch to Read", hint: "view") {
                 [weak self] in self?.setView(.read)
             },
-            PaletteItem(icon: "⬡", label: "Publish preview", hint: "view") {
-                [weak self] in self?.setView(.publish)
-            },
         ]
         if store.folderURL != nil {
             items.append(
@@ -274,7 +271,7 @@ final class DesktopModel: ObservableObject {
             return false
         }
         switch chars {
-        case "i": insertMode = true; return true
+        case "i", "e": setView(.edit); insertMode = true; return true
         case "s": openSendTo(); return true
         case "t": cycleTheme(); return true
         case "j": moveBlock(1); return true
@@ -282,6 +279,8 @@ final class DesktopModel: ObservableObject {
         case "?": keysOpen = true; return true
         default:
             if code == KeyCode.escape {
+                // Esc leaves write mode and returns to read (vim normal).
+                setView(.read)
                 insertMode = false
                 return true
             }

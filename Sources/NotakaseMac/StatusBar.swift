@@ -11,7 +11,8 @@ struct StatusBar: View {
         let n = model.current
         HStack(spacing: 0) {
             HStack(spacing: 0) {
-                ForEach(ViewMode.allCases, id: \.self) { v in
+                // Publish is hidden for now — only Read / Write.
+                ForEach([ViewMode.read, .edit], id: \.self) { v in
                     let active = model.view == v
                     Button(action: { model.setView(v) }) {
                         Text(v.label)
