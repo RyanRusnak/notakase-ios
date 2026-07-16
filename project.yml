@@ -54,3 +54,24 @@ targets:
         INFOPLIST_FILE: Sources/NotakaseiOS/Info.plist
         TARGETED_DEVICE_FAMILY: "1,2"
         SWIFT_VERSION: "5.0"
+
+# Explicit shared schemes so both apps always show up in Xcode's scheme
+# picker (xcodegen doesn't create schemes otherwise, which left the target
+# list empty after regeneration).
+schemes:
+  NotakaseMac:
+    build:
+      targets:
+        NotakaseMac: all
+    run:
+      config: Debug
+    archive:
+      config: Release
+  NotakaseiOS:
+    build:
+      targets:
+        NotakaseiOS: all
+    run:
+      config: Debug
+    archive:
+      config: Release
