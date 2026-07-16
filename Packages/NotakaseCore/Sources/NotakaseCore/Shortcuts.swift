@@ -36,7 +36,6 @@ public enum Shortcuts {
             rows: [
                 KeyRow(keys: ["e"], action: "Edit selected note"),
                 KeyRow(keys: ["a", "n"], action: "New note (seeded title + date)"),
-                KeyRow(keys: ["r"], action: "Rename / move selected note"),
                 KeyRow(keys: ["s"], action: "Send note to a folder"),
                 KeyRow(keys: ["d"], action: "Delete selected note (confirms)"),
             ]),

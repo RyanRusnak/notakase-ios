@@ -24,17 +24,22 @@ struct RootView: View {
 
             VStack(spacing: 0) {
                 TopBar(model: model, theme: theme)
-                ScrollView {
-                    HStack {
-                        Spacer(minLength: 0)
-                        DocumentView(model: model, theme: theme)
-                        Spacer(minLength: 0)
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        HStack {
+                            Spacer(minLength: 0)
+                            DocumentView(model: model, theme: theme)
+                            Spacer(minLength: 0)
+                        }
+                        .padding(.horizontal, 44)
+                        .padding(.top, 52)
+                        .padding(.bottom, 140)
                     }
-                    .padding(.horizontal, 44)
-                    .padding(.top, 52)
-                    .padding(.bottom, 140)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .onChange(of: model.scrollBlock) {
+                        withAnimation { proxy.scrollTo("block-\(model.scrollBlock)", anchor: .top) }
+                    }
                 }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 StatusBar(model: model, theme: theme)
             }
             .background(theme.bgColor)

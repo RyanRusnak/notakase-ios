@@ -118,28 +118,27 @@ struct LibraryView: View {
         theme.bgColor.ignoresSafeArea()
     }
 
+    /// `~/notakase_sync`-style path shown in the header (like todokase mobile).
+    private var headerPath: String {
+        syncFolder.isSet ? "~/\(syncFolder.folderName ?? "notes")" : "notakase"
+    }
+
     private var header: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack {
-                Text("ALL NOTES")
-                    .font(.system(size: 10)).tracking(1.6)
+            HStack(alignment: .center, spacing: 6) {
+                Text(headerPath)
+                    .font(Typo.mono(17, weight: .medium))
+                    .foregroundStyle(theme.fgColor)
+                    .lineLimit(1)
+                    .truncationMode(.head)
+                Text("· \(store.notes.count)")
+                    .font(Typo.mono(13))
                     .foregroundStyle(theme.faintColor)
                 Spacer()
                 themeMenu
                 gearButton
             }
             .padding(.top, 8)
-
-            HStack(alignment: .firstTextBaseline) {
-                Text("Notakase")
-                    .font(Typo.mono(34, weight: .semibold))
-                    .foregroundStyle(theme.fgColor)
-                Spacer()
-                Text("\(store.notes.count) · \(store.folderOrder.count)")
-                    .font(Typo.mono(11))
-                    .foregroundStyle(theme.faintColor)
-            }
-            .padding(.top, 6)
 
             HStack(spacing: 9) {
                 Text("⌕").foregroundStyle(theme.faintColor).font(.system(size: 14))

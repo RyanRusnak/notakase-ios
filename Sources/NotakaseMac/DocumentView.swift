@@ -36,9 +36,10 @@ struct DocumentView: View {
         let blocks = model.blocks
         return VStack(alignment: .leading, spacing: 0) {
             docHeader(n)
-            ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
+            ForEach(Array(blocks.enumerated()), id: \.offset) { i, block in
                 BlockView(block: block, theme: theme)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .id("block-\(i)")
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

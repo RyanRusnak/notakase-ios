@@ -24,6 +24,8 @@ final class DesktopModel: ObservableObject {
     @Published var zen = false
     /// Id of the note pending delete confirmation (`d`), if any.
     @Published var confirmingDeleteID: String?
+    /// Which block the read-preview should scroll to (driven by J/K/⌘F).
+    @Published var scrollBlock = 0
     @Published var paletteOpen = false
     @Published var pq = ""
     @Published var selIndex = 0
@@ -61,6 +63,7 @@ final class DesktopModel: ObservableObject {
     func openNote(_ id: String) {
         openId = id
         activeBlock = 0
+        scrollBlock = 0
         paletteOpen = false
     }
 
@@ -211,7 +214,31 @@ final class DesktopModel: ObservableObject {
     // MARK: - Tree navigation (vim h/j/k/l + enter)
 
     private func openIfNote(_ row: SidebarRow) {
-        if case .note(let n, _) = row { openId = n.id }
+        if case .note(let n, _) = row {
+            openId = n.id
+            scrollBlock = 0
+        }
+    }
+
+    /// g / G — jump the tree cursor to the top / bottom.
+    func treeTop() {
+        let rows = selectableRows
+        guard !rows.isEmpty else { return }
+        treeSel = 0
+        openIfNote(rows[0])
+    }
+    func treeBottom() {
+        let rows = selectableRows
+        guard !rows.isEmpty else { return }
+        treeSel = rows.count - 1
+        openIfNote(rows[treeSel])
+    }
+
+    /// J / K / ⌘F — move the read-preview scroll anchor by whole blocks.
+    func scrollPreview(_ delta: Int) {
+        let n = blocks.count
+        guard n > 0 else { return }
+        scrollBlock = max(0, min(n - 1, scrollBlock + delta))
     }
 
     /// j / k — move the selection, previewing notes as you land on them.
@@ -429,9 +456,17 @@ final class DesktopModel: ObservableObject {
         let cmd = e.modifierFlags.contains(.command)
         let code = e.keyCode
 
-        if cmd && chars.lowercased() == "k" {
-            togglePalette()
-            return true
+        if cmd {
+            switch chars.lowercased() {
+            case "k", "p":  // ⌘K palette / ⌘P quick-switch
+                togglePalette()
+                return true
+            case "f" where view == .read:  // ⌘F page-scroll the preview
+                scrollPreview(6)
+                return true
+            default:
+                break  // let system ⌘ shortcuts (⌘Q, etc.) through
+            }
         }
         // Let the delete-confirmation dialog handle its own keys.
         if confirmingDeleteID != nil { return false }
@@ -505,8 +540,12 @@ final class DesktopModel: ObservableObject {
         case "/": focusSearch = true; return true
         case "j": treeMove(1); return true
         case "k": treeMove(-1); return true
+        case "g": treeTop(); return true
+        case "G": treeBottom(); return true
         case "h": treeCollapseOrParent(); return true
         case "l": treeExpandOrOpen(); return true
+        case "J": scrollPreview(1); return true
+        case "K": scrollPreview(-1); return true
         case "?": keysOpen = true; return true
         default:
             switch code {
