@@ -321,17 +321,35 @@ struct FolderScreen: View {
 
     private var theme: Theme { store.theme }
 
+    private func goBack() {
+        if !path.isEmpty { path.removeLast() }
+    }
+
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             theme.bgColor.ignoresSafeArea()
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    Text(notakasePath(dir: dir))
-                        .font(Typo.mono(17, weight: .medium))
-                        .foregroundStyle(theme.fgColor)
-                        .lineLimit(1)
-                        .truncationMode(.head)
-                        .padding(.bottom, 14)
+                    HStack(spacing: 10) {
+                        Button(action: goBack) {
+                            Text("‹")
+                                .font(.system(size: 18))
+                                .foregroundStyle(theme.fgMutedColor)
+                                .frame(width: 34, height: 34)
+                                .background(theme.elevatedColor)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 11)
+                                        .stroke(theme.borderColor, lineWidth: 1))
+                                .clipShape(RoundedRectangle(cornerRadius: 11))
+                        }
+                        Text(notakasePath(dir: dir))
+                            .font(Typo.mono(17, weight: .medium))
+                            .foregroundStyle(theme.fgColor)
+                            .lineLimit(1)
+                            .truncationMode(.head)
+                        Spacer(minLength: 0)
+                    }
+                    .padding(.bottom, 14)
                     FolderContents(dir: dir, path: $path)
                 }
                 .padding(.horizontal, 20)
@@ -352,25 +370,19 @@ struct FolderScreen: View {
             }
             .padding(.trailing, 24).padding(.bottom, 24)
         }
-        // Hidden nav bar so the path header sits at the same spot as the
-        // index; back is a floating button mirroring the add button.
+        // Nav bar hidden so the header lines up with the index; the inline `‹`
+        // and a left-edge swipe both go back (swipe works at every level).
         .navigationBarHidden(true)
-        .overlay(alignment: .bottomLeading) {
-            Button {
-                if !path.isEmpty { path.removeLast() }
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 20, weight: .medium))
-                    .foregroundStyle(theme.fgMutedColor)
-                    .frame(width: 56, height: 56)
-                    .background(theme.elevatedColor)
-                    .clipShape(RoundedRectangle(cornerRadius: 18))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 18)
-                            .stroke(theme.borderColor, lineWidth: 1))
-            }
-            .padding(.leading, 24).padding(.bottom, 24)
-        }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 15, coordinateSpace: .global)
+                .onEnded { v in
+                    guard v.startLocation.x < 20,
+                        v.translation.width > 90,
+                        abs(v.translation.height) < 60
+                    else { return }
+                    goBack()
+                }
+        )
         .tint(theme.accentColor)
     }
 }
