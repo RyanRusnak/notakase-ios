@@ -240,7 +240,7 @@ struct LibraryView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 18))
                 .shadow(color: theme.accentColor.opacity(0.45), radius: 13, y: 10)
         }
-        .padding(.trailing, 22).padding(.bottom, 40)
+        .padding(.trailing, 24).padding(.bottom, 24)
     }
 }
 
@@ -350,7 +350,7 @@ struct FolderScreen: View {
                     .clipShape(RoundedRectangle(cornerRadius: 18))
                     .shadow(color: theme.accentColor.opacity(0.45), radius: 13, y: 10)
             }
-            .padding(.trailing, 22).padding(.bottom, 40)
+            .padding(.trailing, 24).padding(.bottom, 24)
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
