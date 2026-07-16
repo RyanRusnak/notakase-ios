@@ -12,9 +12,14 @@ final class DesktopModel: ObservableObject {
 
     @Published var openId = "daily-today"
     @Published var view: ViewMode = .read
-    @Published var insertMode = false
-    @Published var activeBlock = 2
+    @Published var activeBlock = 0
     @Published var search = ""
+    /// The whole-note markdown being edited in Write mode.
+    @Published var draft = ""
+    /// Selection cursor in the sidebar tree (index into the selectable rows).
+    @Published var treeSel = 0
+    /// Set true to ask the sidebar to focus its search field (from `/`).
+    @Published var focusSearch = false
     @Published var paletteOpen = false
     @Published var pq = ""
     @Published var selIndex = 0
@@ -116,9 +121,176 @@ final class DesktopModel: ObservableObject {
         }
     }
 
-    func moveBlock(_ d: Int) {
-        let len = blocks.count
-        activeBlock = max(0, min(len - 1, activeBlock + d))
+    // MARK: - Sidebar tree rows
+
+    /// A flattened, display-ordered sidebar row. The model owns this so both
+    /// rendering and keyboard navigation work off the same list.
+    enum SidebarRow: Identifiable, Equatable {
+        case folder(path: [String], glyph: String, depth: Int, open: Bool, count: Int)
+        case note(note: Note, depth: Int)
+        case input(kind: Creating.Kind, depth: Int, placeholder: String)
+
+        var id: String {
+            switch self {
+            case .folder(let p, _, _, _, _): return "f:" + p.joined(separator: "/")
+            case .note(let n, _): return "n:" + n.id
+            case .input(_, let d, _): return "i:\(d)"
+            }
+        }
+        var isSelectable: Bool {
+            if case .input = self { return false }
+            return true
+        }
+    }
+
+    /// The whole visible tree, in render order (loose notes, then folders
+    /// recursively, plus any in-progress creation input row).
+    func visibleRows() -> [SidebarRow] {
+        let q = search.lowercased().trimmingCharacters(in: .whitespaces)
+        func match(_ n: Note) -> Bool {
+            q.isEmpty || (n.title + " " + n.body).lowercased().contains(q)
+        }
+        let visible = q.isEmpty ? store.notes : store.notes.filter(match)
+        var rows: [SidebarRow] = []
+
+        for n in visible where n.dir.isEmpty {
+            rows.append(.note(note: n, depth: 0))
+        }
+        var tops = store.folderOrder
+        for t in visible.compactMap({ $0.dir.first }) where !tops.contains(t) {
+            tops.append(t)
+        }
+        for top in tops {
+            appendFolder(path: [top], visible: visible, depth: 0, q: q, into: &rows)
+        }
+        if creating?.kind == .folder {
+            rows.append(.input(kind: .folder, depth: 0, placeholder: "folder-name…"))
+        }
+        return rows
+    }
+
+    private func appendFolder(
+        path: [String], visible: [Note], depth: Int, q: String,
+        into rows: inout [SidebarRow]
+    ) {
+        let below = visible.filter {
+            $0.dir.count >= path.count && Array($0.dir.prefix(path.count)) == path
+        }
+        let creatingHere = creating?.kind == .note && creating?.parent == path
+        if !q.isEmpty && below.isEmpty && !creatingHere { return }
+
+        let key = path.joined(separator: "/")
+        let open = q.isEmpty ? !collapsed.contains(key) : true
+        let glyph = depth == 0 ? (SeedData.folderGlyph[path[0]] ?? "▤") : "▤"
+        rows.append(
+            .folder(path: path, glyph: glyph, depth: depth, open: open, count: below.count))
+        guard open else { return }
+
+        if creatingHere {
+            rows.append(.input(kind: .note, depth: depth + 1, placeholder: "Untitled note…"))
+        }
+        for n in below where n.dir == path {
+            rows.append(.note(note: n, depth: depth + 1))
+        }
+        var childNames: [String] = []
+        for n in below where n.dir.count > path.count {
+            let child = n.dir[path.count]
+            if !childNames.contains(child) { childNames.append(child) }
+        }
+        for child in childNames.sorted() {
+            appendFolder(path: path + [child], visible: visible, depth: depth + 1, q: q, into: &rows)
+        }
+    }
+
+    var selectableRows: [SidebarRow] { visibleRows().filter(\.isSelectable) }
+
+    // MARK: - Tree navigation (vim h/j/k/l + enter)
+
+    private func openIfNote(_ row: SidebarRow) {
+        if case .note(let n, _) = row { openId = n.id }
+    }
+
+    /// j / k — move the selection, previewing notes as you land on them.
+    func treeMove(_ delta: Int) {
+        let rows = selectableRows
+        guard !rows.isEmpty else { return }
+        treeSel = max(0, min(rows.count - 1, treeSel + delta))
+        openIfNote(rows[treeSel])
+    }
+
+    /// l — expand a folder / open a note.
+    func treeExpandOrOpen() {
+        let rows = selectableRows
+        guard rows.indices.contains(treeSel) else { return }
+        switch rows[treeSel] {
+        case .folder(let path, _, _, let open, _):
+            if !open { collapsed.remove(path.joined(separator: "/")) }
+        case .note(let n, _):
+            openNote(n.id)
+        case .input:
+            break
+        }
+    }
+
+    /// h — collapse a folder, or jump to the parent folder.
+    func treeCollapseOrParent() {
+        let rows = selectableRows
+        guard rows.indices.contains(treeSel) else { return }
+        switch rows[treeSel] {
+        case .folder(let path, _, _, let open, _):
+            if open {
+                collapsed.insert(path.joined(separator: "/"))
+            } else {
+                selectFolder(Array(path.dropLast()))
+            }
+        case .note(let n, _):
+            selectFolder(n.dir)
+        case .input:
+            break
+        }
+    }
+
+    /// enter — open the selected note or toggle the selected folder.
+    func treeActivate() {
+        let rows = selectableRows
+        guard rows.indices.contains(treeSel) else { return }
+        switch rows[treeSel] {
+        case .folder(let path, _, _, _, _):
+            toggleFolder(path.joined(separator: "/"))
+        case .note(let n, _):
+            openNote(n.id)
+        case .input:
+            break
+        }
+    }
+
+    /// Sync the keyboard cursor to a row the user clicked.
+    func selectRow(_ row: SidebarRow) {
+        if let i = selectableRows.firstIndex(where: { $0.id == row.id }) { treeSel = i }
+    }
+
+    private func selectFolder(_ path: [String]) {
+        guard !path.isEmpty else { return }
+        let rows = selectableRows
+        if let i = rows.firstIndex(where: {
+            if case .folder(let p, _, _, _, _) = $0 { return p == path }
+            return false
+        }) {
+            treeSel = i
+        }
+    }
+
+    // MARK: - Editing (full-note Write mode)
+
+    func enterEdit() {
+        draft = current.body
+        setView(.edit)
+    }
+
+    func commitEdit() {
+        if view == .edit, draft != current.body {
+            store.updateBody(id: openId, draft)
+        }
     }
 
     // MARK: create
@@ -264,27 +436,35 @@ final class DesktopModel: ObservableObject {
             }
         }
         if Self.isEditingText() {
+            // A text field/editor has focus. Esc leaves it; in Write mode that
+            // also commits the draft and returns to Read. Everything else
+            // (typing, backspace) passes through to the field.
             if code == KeyCode.escape {
+                if view == .edit {
+                    commitEdit()
+                    setView(.read)
+                }
                 NSApp.keyWindow?.makeFirstResponder(nil)
                 return true
             }
             return false
         }
         switch chars {
-        case "i", "e": setView(.edit); insertMode = true; return true
+        case "i", "e": enterEdit(); return true
         case "s": openSendTo(); return true
         case "t": cycleTheme(); return true
-        case "j": moveBlock(1); return true
-        case "k": moveBlock(-1); return true
+        case "/": focusSearch = true; return true
+        case "j": treeMove(1); return true
+        case "k": treeMove(-1); return true
+        case "h": treeCollapseOrParent(); return true
+        case "l": treeExpandOrOpen(); return true
         case "?": keysOpen = true; return true
         default:
-            if code == KeyCode.escape {
-                // Esc leaves write mode and returns to read (vim normal).
-                setView(.read)
-                insertMode = false
-                return true
+            switch code {
+            case KeyCode.ret: treeActivate(); return true
+            case KeyCode.escape: setView(.read); return true
+            default: return false
             }
-            return false
         }
     }
 }

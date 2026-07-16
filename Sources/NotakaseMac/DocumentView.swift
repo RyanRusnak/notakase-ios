@@ -4,47 +4,60 @@ import SwiftUI
 struct DocumentView: View {
     @ObservedObject var model: DesktopModel
     let theme: Theme
+    @FocusState private var editorFocused: Bool
 
     var body: some View {
         if model.view == .publish {
             publishView
                 .frame(maxWidth: 760)
+        } else if model.view == .edit {
+            editor
+                .frame(maxWidth: 680)
         } else {
-            editView
+            reader
                 .frame(maxWidth: 680)
         }
     }
 
-    // MARK: read / edit
-    private var editView: some View {
+    private func docHeader(_ n: Note) -> some View {
+        HStack(spacing: 10) {
+            Text((n.dir + [n.fileName]).joined(separator: " / "))
+            Text("·")
+            Text(model.view == .edit ? "editing" : "edited " + n.updated)
+        }
+        .font(Typo.mono(11.5))
+        .foregroundStyle(theme.faintColor)
+        .padding(.bottom, 26)
+    }
+
+    // MARK: read (rendered preview)
+    private var reader: some View {
         let n = model.current
         let blocks = model.blocks
         return VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 10) {
-                Text((n.dir + [n.fileName]).joined(separator: " / "))
-                Text("·")
-                Text("edited " + n.updated)
+            docHeader(n)
+            ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
+                BlockView(block: block, theme: theme)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .font(Typo.mono(11.5))
-            .foregroundStyle(theme.faintColor)
-            .padding(.bottom, 26)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
 
-            ForEach(Array(blocks.enumerated()), id: \.offset) { i, block in
-                Group {
-                    if model.view == .edit && i == model.activeBlock {
-                        SourceBlockView(
-                            block: block, theme: theme,
-                            insertMode: model.insertMode)
-                    } else {
-                        BlockView(block: block, theme: theme)
-                    }
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    if model.view == .edit { model.activeBlock = i }
-                }
-            }
+    // MARK: write (full-note markdown editor)
+    private var editor: some View {
+        let n = model.current
+        return VStack(alignment: .leading, spacing: 0) {
+            docHeader(n)
+            TextEditor(text: $model.draft)
+                .font(Typo.mono(15))
+                .foregroundStyle(theme.fgColor)
+                .tint(theme.accentColor)
+                .scrollContentBackground(.hidden)
+                .background(theme.bgColor)
+                .frame(minHeight: 460, alignment: .topLeading)
+                .focused($editorFocused)
+                .onAppear { editorFocused = true }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
