@@ -25,6 +25,7 @@ struct PaletteItem: Identifiable {
 enum KeyCode {
     static let escape: UInt16 = 53
     static let ret: UInt16 = 36
+    static let tab: UInt16 = 48
     static let arrowDown: UInt16 = 125
     static let arrowUp: UInt16 = 126
 }

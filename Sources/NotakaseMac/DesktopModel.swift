@@ -20,6 +20,8 @@ final class DesktopModel: ObservableObject {
     @Published var treeSel = 0
     /// Set true to ask the sidebar to focus its search field (from `/`).
     @Published var focusSearch = false
+    /// Zen mode hides the sidebar tree (Tab).
+    @Published var zen = false
     @Published var paletteOpen = false
     @Published var pq = ""
     @Published var selIndex = 0
@@ -331,8 +333,19 @@ final class DesktopModel: ObservableObject {
             creating = nil
             createValue = ""
             openId = note.id
-            view = .edit
             activeBlock = 0
+            selectNote(note.id)  // move the tree cursor onto the new note
+            enterEdit()          // …and drop straight into its body
+        }
+    }
+
+    /// Move the tree selection cursor onto a note by id.
+    func selectNote(_ id: String) {
+        if let i = selectableRows.firstIndex(where: {
+            if case .note(let n, _) = $0 { return n.id == id }
+            return false
+        }) {
+            treeSel = i
         }
     }
 
@@ -451,6 +464,7 @@ final class DesktopModel: ObservableObject {
         }
         switch chars {
         case "i", "e": enterEdit(); return true
+        case "a", "n": startNote(); return true
         case "s": openSendTo(); return true
         case "t": cycleTheme(); return true
         case "/": focusSearch = true; return true
@@ -462,6 +476,7 @@ final class DesktopModel: ObservableObject {
         default:
             switch code {
             case KeyCode.ret: treeActivate(); return true
+            case KeyCode.tab: zen.toggle(); return true
             case KeyCode.escape: setView(.read); return true
             default: return false
             }

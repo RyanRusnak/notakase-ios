@@ -16,8 +16,11 @@ struct RootView: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            SidebarView(model: model, store: store)
-                .frame(width: 266)
+            if !model.zen {
+                SidebarView(model: model, store: store)
+                    .frame(width: 266)
+                    .transition(.move(edge: .leading))
+            }
 
             VStack(spacing: 0) {
                 TopBar(model: model, theme: theme)
@@ -63,6 +66,7 @@ struct RootView: View {
             KeyCatcher { event in model.handleKey(event) }
                 .frame(width: 0, height: 0)
         )
+        .animation(.easeOut(duration: 0.15), value: model.zen)
         .animation(.easeOut(duration: 0.12), value: model.paletteOpen)
         .animation(.easeOut(duration: 0.12), value: model.sendToOpen)
         .animation(.easeOut(duration: 0.12), value: model.keysOpen)
