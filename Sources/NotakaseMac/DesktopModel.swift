@@ -22,6 +22,8 @@ final class DesktopModel: ObservableObject {
     @Published var focusSearch = false
     /// Zen mode hides the sidebar tree (Tab).
     @Published var zen = false
+    /// Id of the note pending delete confirmation (`d`), if any.
+    @Published var confirmingDeleteID: String?
     @Published var paletteOpen = false
     @Published var pq = ""
     @Published var selIndex = 0
@@ -339,6 +341,36 @@ final class DesktopModel: ObservableObject {
         }
     }
 
+    /// The note under the tree cursor, if the selected row is a note.
+    var selectedNote: Note? {
+        let rows = selectableRows
+        guard rows.indices.contains(treeSel), case .note(let n, _) = rows[treeSel] else {
+            return nil
+        }
+        return n
+    }
+
+    // MARK: - Delete (d, with confirmation)
+
+    func requestDeleteSelected() {
+        if let n = selectedNote { confirmingDeleteID = n.id }
+    }
+
+    func confirmDelete() {
+        guard let id = confirmingDeleteID else { return }
+        confirmingDeleteID = nil
+        store.deleteNote(id: id)
+        // Re-clamp the cursor and preview a neighbouring note.
+        let rows = selectableRows
+        if treeSel >= rows.count { treeSel = max(0, rows.count - 1) }
+        if rows.indices.contains(treeSel), case .note(let n, _) = rows[treeSel] {
+            openId = n.id
+        }
+        if view == .edit { setView(.read) }
+    }
+
+    func cancelDelete() { confirmingDeleteID = nil }
+
     /// Move the tree selection cursor onto a note by id.
     func selectNote(_ id: String) {
         if let i = selectableRows.firstIndex(where: {
@@ -401,6 +433,8 @@ final class DesktopModel: ObservableObject {
             togglePalette()
             return true
         }
+        // Let the delete-confirmation dialog handle its own keys.
+        if confirmingDeleteID != nil { return false }
         if keysOpen {
             if code == KeyCode.escape || chars == "?" {
                 keysOpen = false
@@ -465,6 +499,7 @@ final class DesktopModel: ObservableObject {
         switch chars {
         case "i", "e": enterEdit(); return true
         case "a", "n": startNote(); return true
+        case "d": requestDeleteSelected(); return true
         case "s": openSendTo(); return true
         case "t": cycleTheme(); return true
         case "/": focusSearch = true; return true

@@ -204,6 +204,15 @@ public final class NotakaseStore: ObservableObject {
         if let top = dir.first, !folders.contains(top) { folders.append(top) }
     }
 
+    /// Delete a note: remove it from memory and tombstone its document so the
+    /// deletion propagates to other devices.
+    public func deleteNote(id: String) {
+        notes.removeAll { $0.id == id }
+        if let url = folderURL {
+            try? AutomergeVault.delete(noteID: id, in: url)
+        }
+    }
+
     /// Replace a note's body (used by the iOS inline editor). Writes to disk
     /// when folder-backed.
     public func updateBody(id: String, _ body: String) {

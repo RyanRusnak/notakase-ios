@@ -61,6 +61,18 @@ struct RootView: View {
                 SendToView(model: model, theme: theme)
             }
         }
+        .confirmationDialog(
+            "Delete this note?",
+            isPresented: Binding(
+                get: { model.confirmingDeleteID != nil },
+                set: { if !$0 { model.cancelDelete() } }),
+            presenting: model.confirmingDeleteID
+        ) { id in
+            Button("Delete \(store.note(id: id)?.title ?? "note")", role: .destructive) {
+                model.confirmDelete()
+            }
+            Button("Cancel", role: .cancel) { model.cancelDelete() }
+        }
         .onWikiLink { title in model.openByTitle(title) }
         .background(
             KeyCatcher { event in model.handleKey(event) }

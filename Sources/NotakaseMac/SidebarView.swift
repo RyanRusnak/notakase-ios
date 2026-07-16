@@ -102,8 +102,8 @@ struct SidebarView: View {
                 .tracking(1.3)
                 .foregroundStyle(theme.faintColor)
             Spacer()
-            addButton(glyph: "¶") { model.startNote() }
-            addButton(glyph: "▤") { model.startFolder() }
+            addButton(glyph: "¶") { searchFocused = false; model.startNote() }
+            addButton(glyph: "▤") { searchFocused = false; model.startFolder() }
         }
         .padding(.horizontal, 14).padding(.bottom, 8).padding(.top, 2)
     }
@@ -153,6 +153,7 @@ struct SidebarView: View {
         case .folder(let path, let glyph, let depth, let open, let count):
             let key = path.joined(separator: "/")
             HoverButton(action: {
+                searchFocused = false
                 model.selectRow(row)
                 model.toggleFolder(key)
             }) { hovering in
@@ -185,6 +186,7 @@ struct SidebarView: View {
         case .note(let n, let depth):
             let active = n.id == model.current.id
             HoverButton(action: {
+                searchFocused = false
                 model.selectRow(row)
                 model.openNote(n.id)
             }) { hovering in
