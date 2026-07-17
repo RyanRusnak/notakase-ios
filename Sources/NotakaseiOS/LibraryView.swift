@@ -141,6 +141,9 @@ struct LibraryView: View {
                     .font(Typo.mono(13))
                     .foregroundStyle(theme.faintColor)
                 Spacer()
+                if syncFolder.isSet {
+                    SyncStatusLabel(store: store, theme: theme)
+                }
                 themeMenu
                 gearButton
             }

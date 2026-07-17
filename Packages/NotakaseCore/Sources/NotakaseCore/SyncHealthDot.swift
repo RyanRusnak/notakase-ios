@@ -29,3 +29,28 @@ public struct SyncHealthDot: View {
             .accessibilityLabel(Text(store.syncStatusDescription))
     }
 }
+
+/// The health dot plus a compact "synced 2m ago" label — a visible
+/// at-a-glance last-sync indicator (unlike the dot's hover-only tooltip).
+public struct SyncStatusLabel: View {
+    @ObservedObject var store: NotakaseStore
+    let theme: Theme
+    let fontSize: CGFloat
+
+    public init(store: NotakaseStore, theme: Theme, fontSize: CGFloat = 11) {
+        self.store = store
+        self.theme = theme
+        self.fontSize = fontSize
+    }
+
+    public var body: some View {
+        HStack(spacing: 5) {
+            SyncHealthDot(store: store, theme: theme)
+            Text(store.syncStatusShort)
+                .font(Typo.mono(fontSize))
+                .foregroundStyle(theme.faintColor)
+                .lineLimit(1)
+        }
+        .help(store.syncStatusDescription)
+    }
+}

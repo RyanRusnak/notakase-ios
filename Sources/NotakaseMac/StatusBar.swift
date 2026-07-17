@@ -33,6 +33,15 @@ struct StatusBar: View {
             statusText("Ln \(model.activeBlock + 1), Col 1")
             statusText("markdown", leadingBorder: true)
 
+            if syncFolder.isSet {
+                SyncStatusLabel(store: model.store, theme: theme)
+                    .padding(.horizontal, 12)
+                    .frame(maxHeight: .infinity)
+                    .overlay(alignment: .leading) {
+                        Rectangle().fill(theme.borderColor).frame(width: 1)
+                    }
+            }
+
             HoverButton(action: { openSettings() }) { hovering in
                 HStack(spacing: 6) {
                     Image(systemName: syncFolder.isSet ? "folder.fill" : "folder.badge.plus")

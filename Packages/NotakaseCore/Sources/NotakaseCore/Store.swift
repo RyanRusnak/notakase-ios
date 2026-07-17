@@ -37,6 +37,23 @@ public final class NotakaseStore: ObservableObject {
         return "Not synced yet"
     }
 
+    /// Compact at-a-glance status, e.g. "synced 2m ago" / "sync failed".
+    public var syncStatusShort: String {
+        guard folderURL != nil else { return "local" }
+        if lastSyncError != nil { return "sync failed" }
+        if let ts = lastSyncedAt { return "synced " + Self.relativeTime(ts) }
+        return "not synced"
+    }
+
+    static func relativeTime(_ date: Date, now: Date = Date()) -> String {
+        let secs = now.timeIntervalSince(date)
+        if secs < 45 { return "just now" }
+        if secs < 3600 { return "\(Int(secs / 60))m ago" }
+        if secs < 86400 { return "\(Int(secs / 3600))h ago" }
+        let days = Int(secs / 86400)
+        return days == 1 ? "yesterday" : "\(days)d ago"
+    }
+
     /// Watches the sync folder so notes added on other devices appear here.
     private var watcher: FolderWatcher?
 
