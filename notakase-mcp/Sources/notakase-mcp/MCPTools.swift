@@ -13,7 +13,7 @@ struct MCPTool {
 enum MCPTools {
     static let all: [MCPTool] = [
         listNotesTool, getNoteTool, addNoteTool,
-        appendNoteTool, updateNoteTool, moveNoteTool, deleteNoteTool,
+        appendNoteTool, updateNoteTool, renameNoteTool, moveNoteTool, deleteNoteTool,
     ]
 
     static func call(params: [String: Any], config: MCPConfig) throws -> Any {
@@ -35,6 +35,9 @@ enum MCPTools {
         case "update_note":
             try requireWritable(config)
             text = try handleUpdate(args: args, config: config)
+        case "rename_note":
+            try requireWritable(config)
+            text = try handleRename(args: args, config: config)
         case "move_note":
             try requireWritable(config)
             text = try handleMove(args: args, config: config)
@@ -141,6 +144,38 @@ enum MCPTools {
         return "Replaced body of \(id)."
     }
 
+    private static func handleRename(args: [String: Any], config: MCPConfig) throws -> String {
+        guard let id = args["id"] as? String else {
+            throw MCPError(code: -32602, message: "rename_note requires `id`")
+        }
+        guard let title = args["title"] as? String, !title.isEmpty else {
+            throw MCPError(code: -32602, message: "rename_note requires a non-empty `title`")
+        }
+        let note = try loadNote(id, config)
+        var renamed = note
+        renamed.title = title
+        renamed.slug = nil  // filename derives from the new title
+        renamed.body = replacingHeading(note.body, with: title)
+        // Update the body/title, then repath the file to the new slug (same folder).
+        try AutomergeVault.write(note: renamed, to: config.folderURL)
+        try AutomergeVault.move(
+            noteID: id, to: note.dir, fileName: renamed.fileName, in: config.folderURL)
+        let path = (note.dir + [renamed.fileName]).joined(separator: "/")
+        return "Renamed \(id) → \(path)"
+    }
+
+    /// Replace the note's first `# heading` with `title` (or prepend one).
+    private static func replacingHeading(_ body: String, with title: String) -> String {
+        var lines = body.components(separatedBy: "\n")
+        if let i = lines.firstIndex(where: {
+            !$0.trimmingCharacters(in: .whitespaces).isEmpty
+        }), lines[i].trimmingCharacters(in: .whitespaces).hasPrefix("# ") {
+            lines[i] = "# \(title)"
+            return lines.joined(separator: "\n")
+        }
+        return "# \(title)\n\n" + body
+    }
+
     private static func handleMove(args: [String: Any], config: MCPConfig) throws -> String {
         guard let id = args["id"] as? String else {
             throw MCPError(code: -32602, message: "move_note requires `id`")
@@ -236,6 +271,19 @@ enum MCPTools {
                 "body": ["type": "string", "description": "New full markdown body."],
             ],
             "required": ["id", "body"],
+        ])
+
+    private static let renameNoteTool = MCPTool(
+        name: "rename_note",
+        description:
+            "Rename a note: set a new title (updates the `# heading`) and repath its file to the new slug, keeping it in the same folder.",
+        inputSchema: [
+            "type": "object",
+            "properties": [
+                "id": ["type": "string", "description": "Note id."],
+                "title": ["type": "string", "description": "New title."],
+            ],
+            "required": ["id", "title"],
         ])
 
     private static let moveNoteTool = MCPTool(
