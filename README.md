@@ -128,6 +128,34 @@ project name. The block renders as a live checklist read from todokase's
 read-only (notakase never writes the task store). The reader is `TodokaseTasks`
 (core) and the renderer is `TodokaseBlockView`.
 
+## Letting Claude create notes (MCP)
+
+`notakase-mcp/` is a local [MCP](https://modelcontextprotocol.io) server (stdio
+JSON-RPC, mirroring `todarchy-mcp`) that lets Claude Desktop / Claude Code
+create and read notes directly. It reuses `AutomergeVault`, so notes it writes
+are byte-identical to the apps' and sync through the same folder.
+
+Tools: `add_note` (title / folder / body), `list_notes`, `get_note`.
+
+Build, install, and register:
+
+```bash
+cd notakase-mcp && swift build -c release
+cp .build/release/notakase-mcp ~/bin/notakase-mcp
+```
+
+Then add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
+
+```json
+"notakase": {
+  "command": "/Users/<you>/bin/notakase-mcp",
+  "env": { "NOTAKASE_FOLDER": "/path/to/your/notakase_sync" }
+}
+```
+
+`NOTAKASE_FOLDER` points at the sync folder; `NOTAKASE_MCP_READ_ONLY=1` disables
+writes. Restart Claude Desktop to pick it up.
+
 ## Deep links
 
 The iOS app registers the `notakase://` URL scheme. `notakase://wiki/<title>`
@@ -140,8 +168,7 @@ xcrun simctl openurl booted "notakase://wiki/Omarchy%20Setup"
 
 ## Notes on fidelity
 
-- Prose uses the system **monospaced** face (SF Mono) rather than bundling
-  JetBrains Mono, matching the design's default `mono` prose setting without
-  shipping font files.
+- The UI ships **JetBrains Mono** (bundled in `Resources/Fonts/`, registered at
+  launch); `Typo.mono` is the single place that picks the monospace face.
 - The original HTML/CSS design bundle lives in `notakase-markdown-notes-app/`
   (git-ignored) as the source-of-truth reference.
