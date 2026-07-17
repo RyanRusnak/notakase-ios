@@ -85,17 +85,24 @@ public struct InlineText: View {
     let text: String
     let theme: Theme
     let baseSize: CGFloat
+    var weight: Font.Weight
+    var color: Color?
 
-    public init(_ text: String, theme: Theme, baseSize: CGFloat) {
+    public init(
+        _ text: String, theme: Theme, baseSize: CGFloat,
+        weight: Font.Weight = .regular, color: Color? = nil
+    ) {
         self.text = text
         self.theme = theme
         self.baseSize = baseSize
+        self.weight = weight
+        self.color = color
     }
 
     public var body: some View {
         Text(Markdown.attributed(text, theme: theme, baseSize: baseSize))
-            .font(Typo.mono(baseSize))
-            .foregroundStyle(theme.fgColor)
+            .font(Typo.mono(baseSize, weight: weight))
+            .foregroundStyle(color ?? theme.fgColor)
             .tint(theme.accentColor)
     }
 }
@@ -125,16 +132,32 @@ public struct BlockView: View {
         }
     }
 
+    /// Top three levels take the accent (per the design); deeper headings dim
+    /// out so the hierarchy still reads at a glance.
+    private func headingColor(_ level: Int) -> Color {
+        level <= 3 ? theme.accentColor : theme.fgMutedColor
+    }
+
     public var body: some View {
         switch block {
         case .heading(let level, let text, _):
-            InlineText(text, theme: theme, baseSize: headingSize(level))
-                .font(Typo.mono(headingSize(level), weight: .semibold))
-                .foregroundStyle(theme.fgColor)
+            VStack(alignment: .leading, spacing: 6) {
+                InlineText(
+                    text, theme: theme, baseSize: headingSize(level),
+                    weight: .semibold, color: headingColor(level)
+                )
                 .tracking(-0.3)
                 .fixedSize(horizontal: false, vertical: true)
-                .padding(.top, level == 1 ? 0 : 18)
-                .padding(.bottom, level == 1 ? 12 : 8)
+                // Top two levels get a themed rule: an accent bar under H1,
+                // a hairline under H2, for structure that reads the palette.
+                if level == 1 {
+                    Rectangle().fill(theme.accentColor.opacity(0.55)).frame(height: 2)
+                } else if level == 2 {
+                    Rectangle().fill(theme.borderColor).frame(height: 1)
+                }
+            }
+            .padding(.top, level == 1 ? 0 : 18)
+            .padding(.bottom, level == 1 ? 14 : 8)
 
         case .paragraph(let text, _):
             InlineText(text, theme: theme, baseSize: baseSize)
